@@ -1,6 +1,7 @@
 package db
 
 import (
+	basic_errors "errors"
 	"github.com/jinzhu/gorm"
 	"github.com/pkg/errors"
 	"github.com/utyosu/robotyosu-go/i18n"
@@ -28,6 +29,9 @@ type Recruitment struct {
 func FetchActiveRecruitmentWithLabel(channelId uint, label int) (*Recruitment, error) {
 	recruitment := &Recruitment{}
 	err := dbs.Preload("Participants.User").Preload("Participants").Take(recruitment, "channel_id=? AND active=? AND label=?", channelId, true, label).Error
+	if basic_errors.Is(err, gorm.ErrRecordNotFound) {
+		return recruitment, nil
+	}
 	return recruitment, errors.WithStack(err)
 }
 
@@ -62,6 +66,8 @@ func InsertRecruitment(user *User, channel *Channel, title string, capacity uint
 		return nil, i18n.T(channel.Language, "too_long_title"), nil
 	} else if capacity < 2 {
 		return nil, i18n.T(channel.Language, "capacity_less"), nil
+	} else if 4294967294 < capacity {
+		return nil, i18n.T(channel.Language, "capacity_over"), nil
 	}
 
 	if reserveAt != nil && reserveAt.Before(time.Now()) {
