@@ -1,6 +1,7 @@
 package db
 
 import (
+	basic_errors "errors"
 	"github.com/jinzhu/gorm"
 	"github.com/pkg/errors"
 	"github.com/utyosu/robotyosu-go/i18n"
@@ -28,6 +29,9 @@ type Recruitment struct {
 func FetchActiveRecruitmentWithLabel(channelId uint, label int) (*Recruitment, error) {
 	recruitment := &Recruitment{}
 	err := dbs.Preload("Participants.User").Preload("Participants").Take(recruitment, "channel_id=? AND active=? AND label=?", channelId, true, label).Error
+	if basic_errors.Is(err, gorm.ErrRecordNotFound) {
+		return recruitment, nil
+	}
 	return recruitment, errors.WithStack(err)
 }
 
