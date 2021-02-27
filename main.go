@@ -90,7 +90,7 @@ func onMessageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 
 	authorId, _ := strconv.ParseInt(m.Author.ID, 10, 64)
 	userName := m.Author.Username
-	if m.Member.Nick != "" {
+	if m.Member != nil && m.Member.Nick != "" {
 		userName = m.Member.Nick
 	}
 	user, err := db.FindOrCreateUser(authorId, userName)
