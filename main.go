@@ -57,10 +57,16 @@ func main() {
 func onMessageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 	defer notifySlackWhenPanic(messageInformation(s, m))
 
+	// 自分のメッセージは処理しない
 	if m.Author.ID == env.DiscordBotClientId {
 		return
 	}
-	log.Printf("\t%s\t%s\t%s\t%s\n", m.GuildID, m.ChannelID, m.Author.Username, m.Content)
+	log.Printf("\t%v\t%v\t%v\t%v\t%v\n", m.GuildID, m.ChannelID, m.Type, m.Author.Username, m.Content)
+
+	// サーバーIDがない(=DM)は処理しない
+	if m.GuildID == "" {
+		return
+	}
 
 	discordChannelId, _ := strconv.ParseInt(m.ChannelID, 10, 64)
 
@@ -90,7 +96,7 @@ func onMessageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 
 	authorId, _ := strconv.ParseInt(m.Author.ID, 10, 64)
 	userName := m.Author.Username
-	if m.Member.Nick != "" {
+	if m.Member != nil && m.Member.Nick != "" {
 		userName = m.Member.Nick
 	}
 	user, err := db.FindOrCreateUser(authorId, userName)
