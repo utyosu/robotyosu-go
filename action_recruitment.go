@@ -1,0 +1,257 @@
+package main
+
+import (
+	"fmt"
+	"github.com/bwmarrin/discordgo"
+	"github.com/utyosu/robotyosu-go/db"
+	"github.com/utyosu/robotyosu-go/i18n"
+	"github.com/utyosu/robotyosu-go/msg"
+	"golang.org/x/text/width"
+	"regexp"
+	"strings"
+	"time"
+)
+
+var (
+	regexpMention                 = regexp.MustCompile(`<@!?\d+>`)
+	regexpOpenRecruitment         = regexp.MustCompile(`@(\d+)`)
+	regexpFormatContentDeleteWord = regexp.MustCompile(`\r\n|\r|\n`)
+)
+
+func formatContent(s string) string {
+	s = width.Fold.String(s)
+	return regexpFormatContentDeleteWord.ReplaceAllString(s, "")
+}
+
+func actionRecruitment(s *discordgo.Session, m *discordgo.MessageCreate, channel *db.Channel, user *db.User) error {
+	formattedContent := formatContent(m.Content)
+	switch {
+	// 一覧
+	case isContainKeywords(formattedContent, keywordsViewRecruitment):
+		viewActiveRecruitments(channel)
+
+	// 参加
+	case isContainKeywords(formattedContent, keywordsJoinRecruitment):
+		recruitment, err := fetchRecruitmentWithMessage(formattedContent, channel.ID)
+		if err != nil {
+			return err
+		} else if recruitment == nil {
+			return nil
+		}
+		if recruitment.IsParticipantsFull() {
+			sendMessageT(channel, "not_join_because_full", recruitment.Label)
+			viewActiveRecruitments(channel)
+			return nil
+		}
+		if ok, err := recruitment.JoinParticipant(user); err != nil {
+			return err
+		} else if ok {
+			tweet(channel, recruitment, TwitterTypeUpdate)
+			sendMessageT(channel, "join", user.Name, recruitment.Label)
+			if recruitment.IsParticipantsFull() {
+				if recruitment.IsPastReserveAt() {
+					if err := recruitment.CloseRecruitment(); err != nil {
+						return err
+					}
+					tweet(channel, recruitment, TwitterTypeClose)
+					sendMessageT(channel, "gathered", recruitmentMentions(recruitment), recruitment.Label)
+				} else {
+					sendMessageT(channel, "gathered_reserved", recruitment.Label)
+				}
+			}
+			viewActiveRecruitments(channel)
+		}
+
+	// キャンセル
+	case isContainKeywords(formattedContent, keywordsCancelRecruitment):
+		recruitment, err := fetchRecruitmentWithMessage(formattedContent, channel.ID)
+		if err != nil {
+			return err
+		} else if recruitment == nil {
+			return nil
+		}
+		ok, err := recruitment.LeaveParticipant(user)
+		if err != nil {
+			return err
+		} else if ok {
+			tweet(channel, recruitment, TwitterTypeUpdate)
+			sendMessageT(channel, "leave", user.Name, recruitment.Label)
+			viewActiveRecruitments(channel)
+		}
+
+	// 募集
+	case regexpOpenRecruitment.MatchString(formattedContent):
+		if haveMention(formattedContent) {
+			return nil
+		}
+		timezone := channel.LoadLocation()
+		now := time.Now().In(timezone)
+		reserveAt := msg.ParseTime(formattedContent, now)
+		capacity := uint(getMatchRegexpNumber(formattedContent, regexpOpenRecruitment) + 1)
+		recruitment, msg, err := db.InsertRecruitment(user, channel, formattedContent, capacity, reserveAt)
+		if err != nil {
+			return err
+		} else if recruitment == nil {
+			sendMessage(m.ChannelID, msg)
+			return nil
+		}
+		tweet(channel, recruitment, TwitterTypeOpen)
+		if recruitment.ReserveAt != nil {
+			sendMessageT(channel, "open_with_reserve", user.Name, recruitment.Label, recruitment.ReserveAtTime(channel.LoadLocation()))
+		} else {
+			sendMessageT(channel, "open", user.Name, recruitment.Label, recruitment.ExpireAtTime(channel.LoadLocation()))
+		}
+		viewActiveRecruitments(channel)
+
+	// 終了
+	case isContainKeywords(formattedContent, keywordsCloseRecruitment):
+		recruitment, err := fetchRecruitmentWithMessage(formattedContent, channel.ID)
+		if err != nil {
+			return err
+		} else if recruitment == nil {
+			return nil
+		}
+		if err := recruitment.CloseRecruitment(); err != nil {
+			return err
+		}
+		tweet(channel, recruitment, TwitterTypeClose)
+		sendMessageT(channel, "closed", user.Name, recruitment.Label)
+		viewActiveRecruitments(channel)
+
+	// 復活
+	case isContainKeywords(formattedContent, keywordsCloseResurrection):
+		recruitment, err := db.ResurrectClosedRecruitment(channel.ID)
+		if err != nil {
+			return err
+		} else if recruitment != nil {
+			sendMessageT(channel, "resurrection", recruitment.Label)
+			viewActiveRecruitments(channel)
+		}
+	}
+	return nil
+}
+
+func fetchRecruitmentWithMessage(content string, channelId uint) (*db.Recruitment, error) {
+	number := msg.ExtractNumber(trimMention(content))
+	if number == 0 {
+		return nil, nil
+	}
+	recruitment, err := db.FetchActiveRecruitmentWithLabel(channelId, number)
+	if err != nil {
+		return nil, err
+	}
+	if recruitment.ID == 0 {
+		return nil, nil
+	}
+	return recruitment, nil
+}
+
+func haveMention(s string) bool {
+	return regexpMention.MatchString(s)
+}
+
+func trimMention(s string) string {
+	return regexpMention.ReplaceAllString(s, "")
+}
+
+func closeExpiredRecruitment() {
+	channels, err := db.FetchAllChannels()
+	if err != nil {
+		postSlackWarning(err)
+		return
+	}
+	for _, channel := range channels {
+		closed := false
+		recruitments, err := db.FetchActiveRecruitments(channel.ID)
+		if err != nil {
+			postSlackWarning(err)
+			return
+		}
+		for _, recruitment := range recruitments {
+			if recruitment.IsPastExpireAt() {
+				if err := recruitment.CloseRecruitment(); err != nil {
+					postSlackWarning(err)
+					continue
+				}
+				tweet(channel, recruitment, TwitterTypeClose)
+				sendMessageT(channel, "expired", recruitment.Label)
+				closed = true
+			}
+		}
+		if closed {
+			viewActiveRecruitments(channel)
+		}
+	}
+}
+
+func notifyReservedRecruitmentOnTime() {
+	now := time.Now()
+	channels, err := db.FetchAllChannels()
+	if err != nil {
+		postSlackWarning(err)
+		return
+	}
+	for _, channel := range channels {
+		recruitments, err := db.FetchActiveRecruitments(channel.ID)
+		if err != nil {
+			postSlackWarning(err)
+			return
+		}
+		existNotified := false
+		for _, recruitment := range recruitments {
+			if notified, closed, err := recruitment.ProcessOnTime(now); err != nil {
+				postSlackWarning(err)
+				return
+			} else if notified {
+				if closed {
+					sendMessageT(channel, "close_reserved", recruitmentMentions(recruitment), recruitment.Label)
+				} else {
+					sendMessageT(channel, "reserve_on_time", recruitment.Label, recruitment.VacantSize())
+				}
+				existNotified = true
+			}
+		}
+		if existNotified {
+			viewActiveRecruitments(channel)
+		}
+	}
+}
+
+func viewActiveRecruitments(c *db.Channel) {
+	recruitments, err := db.FetchActiveRecruitments(c.ID)
+	if err != nil {
+		sendMessageT(c, "error")
+		postSlackWarning(err)
+		return
+	}
+	m := "```\n"
+	if len(recruitments) == 0 {
+		m += i18n.T(c.Language, "no_recruitment")
+	} else {
+		for _, r := range recruitments {
+			// 参加者が0人以下ならば表示しない
+			if len(r.Participants) <= 0 {
+				continue
+			}
+
+			m += i18n.T(c.Language, "recruit", r.Label, r.Title, r.AuthorName()) + "\n"
+
+			// 参加者が2名以上ならメンバーを表示する
+			memberNames := r.MemberNames()
+			if len(memberNames) > 0 {
+				m += i18n.T(c.Language, "participants", strings.Join(memberNames, ", ")) + "\n"
+			}
+		}
+	}
+	m += "\n```"
+
+	sendMessage(c.DiscordIdStr(), m)
+}
+
+func recruitmentMentions(r *db.Recruitment) string {
+	var s string
+	for _, p := range r.Participants {
+		s += fmt.Sprintf("<@%v>", p.User.DiscordUserId)
+	}
+	return s
+}

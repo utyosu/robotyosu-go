@@ -1,0 +1,5 @@
+bin/
+env/env_local.go
+env/env_production.go
+.vscode/
+/test.sql
