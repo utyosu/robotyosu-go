@@ -66,6 +66,8 @@ func InsertRecruitment(user *User, channel *Channel, title string, capacity uint
 		return nil, i18n.T(channel.Language, "too_long_title"), nil
 	} else if capacity < 2 {
 		return nil, i18n.T(channel.Language, "capacity_less"), nil
+	} else if 4294967294 < capacity {
+		return nil, i18n.T(channel.Language, "capacity_over"), nil
 	}
 
 	if reserveAt != nil && reserveAt.Before(time.Now()) {
