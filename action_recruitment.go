@@ -43,7 +43,7 @@ func actionRecruitment(s *discordgo.Session, m *discordgo.MessageCreate, channel
 			viewActiveRecruitments(channel)
 			return nil
 		}
-		if ok, err := recruitment.JoinParticipant(user); err != nil {
+		if ok, err := recruitment.JoinParticipant(user, channel); err != nil {
 			return err
 		} else if ok {
 			tweet(channel, recruitment, TwitterTypeUpdate)
@@ -70,7 +70,7 @@ func actionRecruitment(s *discordgo.Session, m *discordgo.MessageCreate, channel
 		} else if recruitment == nil {
 			return nil
 		}
-		ok, err := recruitment.LeaveParticipant(user)
+		ok, err := recruitment.LeaveParticipant(user, channel)
 		if err != nil {
 			return err
 		} else if ok {
