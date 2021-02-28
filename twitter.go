@@ -66,7 +66,7 @@ func tweet(c *db.Channel, r *db.Recruitment, t TwitterType) {
 		}
 	}
 
-	msg := buildTwitterMessage(twitterConfig, c, r, t)
+	msg := short140ForTwitter(buildTwitterMessage(twitterConfig, c, r, t))
 	tweet, _, err := twitterClient.Statuses.Update(toTwitterSafe(msg), status)
 	if err != nil {
 		sendMessageT(c, "twitter_error")
@@ -99,4 +99,13 @@ func buildTwitterMessage(twitterConfig *db.TwitterConfig, c *db.Channel, r *db.R
 
 func toTwitterSafe(s string) string {
 	return regexp.MustCompile(`@`).ReplaceAllString(s, "@ ")
+}
+
+func short140ForTwitter(s string) string {
+	runes := []rune(s)
+	fmt.Printf("runes-len:%v\n", len(runes))
+	if len(runes) <= 140 {
+		return s
+	}
+	return string(runes[:137]) + "..."
 }
