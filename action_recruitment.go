@@ -47,7 +47,7 @@ func actionRecruitment(s *discordgo.Session, m *discordgo.MessageCreate, channel
 			return err
 		} else if ok {
 			tweet(channel, recruitment, TwitterTypeUpdate)
-			sendMessageT(channel, "join", user.Name, recruitment.Label)
+			sendMessageT(channel, "join", user.DisplayName(), recruitment.Label)
 			if recruitment.IsParticipantsFull() {
 				if recruitment.IsPastReserveAt() {
 					if err := recruitment.CloseRecruitment(); err != nil {
@@ -75,7 +75,7 @@ func actionRecruitment(s *discordgo.Session, m *discordgo.MessageCreate, channel
 			return err
 		} else if ok {
 			tweet(channel, recruitment, TwitterTypeUpdate)
-			sendMessageT(channel, "leave", user.Name, recruitment.Label)
+			sendMessageT(channel, "leave", user.DisplayName(), recruitment.Label)
 			viewActiveRecruitments(channel)
 		}
 
@@ -97,9 +97,9 @@ func actionRecruitment(s *discordgo.Session, m *discordgo.MessageCreate, channel
 		}
 		tweet(channel, recruitment, TwitterTypeOpen)
 		if recruitment.ReserveAt != nil {
-			sendMessageT(channel, "open_with_reserve", user.Name, recruitment.Label, recruitment.ReserveAtTime(channel.LoadLocation()))
+			sendMessageT(channel, "open_with_reserve", user.DisplayName(), recruitment.Label, recruitment.ReserveAtTime(channel.LoadLocation()))
 		} else {
-			sendMessageT(channel, "open", user.Name, recruitment.Label, recruitment.ExpireAtTime(channel.LoadLocation()))
+			sendMessageT(channel, "open", user.DisplayName(), recruitment.Label, recruitment.ExpireAtTime(channel.LoadLocation()))
 		}
 		viewActiveRecruitments(channel)
 
@@ -115,12 +115,12 @@ func actionRecruitment(s *discordgo.Session, m *discordgo.MessageCreate, channel
 			return err
 		}
 		tweet(channel, recruitment, TwitterTypeClose)
-		sendMessageT(channel, "closed", user.Name, recruitment.Label)
+		sendMessageT(channel, "closed", user.DisplayName(), recruitment.Label)
 		viewActiveRecruitments(channel)
 
 	// 復活
 	case isContainKeywords(formattedContent, keywordsCloseResurrection):
-		recruitment, err := db.ResurrectClosedRecruitment(channel.ID)
+		recruitment, err := db.ResurrectClosedRecruitment(channel)
 		if err != nil {
 			return err
 		} else if recruitment != nil {
@@ -162,7 +162,7 @@ func closeExpiredRecruitment() {
 	}
 	for _, channel := range channels {
 		closed := false
-		recruitments, err := db.FetchActiveRecruitments(channel.ID)
+		recruitments, err := db.FetchActiveRecruitments(channel)
 		if err != nil {
 			postSlackWarning(err)
 			return
@@ -192,7 +192,7 @@ func notifyReservedRecruitmentOnTime() {
 		return
 	}
 	for _, channel := range channels {
-		recruitments, err := db.FetchActiveRecruitments(channel.ID)
+		recruitments, err := db.FetchActiveRecruitments(channel)
 		if err != nil {
 			postSlackWarning(err)
 			return
@@ -218,7 +218,7 @@ func notifyReservedRecruitmentOnTime() {
 }
 
 func viewActiveRecruitments(c *db.Channel) {
-	recruitments, err := db.FetchActiveRecruitments(c.ID)
+	recruitments, err := db.FetchActiveRecruitments(c)
 	if err != nil {
 		sendMessageT(c, "error")
 		postSlackWarning(err)

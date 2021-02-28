@@ -67,10 +67,8 @@ func onMessageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 		return
 	}
 
-	discordChannelId, _ := strconv.ParseInt(m.ChannelID, 10, 64)
-
 	// 全チャンネルで使えるコマンド
-	if processed, err := actionAllChannel(s, m, discordChannelId); err != nil {
+	if processed, err := actionAllChannel(s, m); err != nil {
 		sendMessage(m.ChannelID, i18n.T(i18n.DefaultLanguage, "error"))
 		postSlackWarning(err)
 		return
@@ -78,6 +76,7 @@ func onMessageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 		return
 	}
 
+	discordChannelId, _ := strconv.ParseInt(m.ChannelID, 10, 64)
 	channel, err := db.FindChannel(discordChannelId)
 	if err != nil {
 		postSlackWarning(err)
@@ -99,14 +98,21 @@ func onMessageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 
 	authorId, _ := strconv.ParseInt(m.Author.ID, 10, 64)
 	userName := m.Author.Username
-	if m.Member != nil && m.Member.Nick != "" {
-		userName = m.Member.Nick
-	}
 	user, err := db.FindOrCreateUser(authorId, userName)
 	if err != nil {
 		sendMessageT(channel, "error")
 		postSlackWarning(err)
 		return
+	}
+	if m.Member != nil {
+		guildId, _ := strconv.ParseInt(m.GuildID, 10, 64)
+		nickname, err := db.UpdateNickname(user.ID, guildId, m.Member.Nick)
+		if err != nil {
+			sendMessageT(channel, "error")
+			postSlackWarning(err)
+			return
+		}
+		user.Nickname = *nickname
 	}
 
 	// recruitmentが有効なチャンネルで使えるコマンド

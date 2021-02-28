@@ -10,6 +10,7 @@ type User struct {
 	gorm.Model
 	DiscordUserId int64
 	Name          string
+	Nickname      Nickname `gorm:"foreignkey:UserId"`
 }
 
 func FindOrCreateUser(discordUserId int64, name string) (*User, error) {
@@ -33,4 +34,11 @@ func FindOrCreateUser(discordUserId int64, name string) (*User, error) {
 		}
 	}
 	return &user, nil
+}
+
+func (u *User) DisplayName() string {
+	if u.Nickname.Name != "" {
+		return u.Nickname.Name
+	}
+	return u.Name
 }

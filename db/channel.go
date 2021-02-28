@@ -16,6 +16,7 @@ const (
 type Channel struct {
 	gorm.Model
 	DiscordChannelId int64
+	DiscordGuildId   int64
 	Recruitment      bool
 	Timezone         string
 	Language         string
@@ -33,13 +34,14 @@ func FindChannel(discordChannelId int64) (*Channel, error) {
 	return &channel, nil
 }
 
-func FindOrCreateChannel(discordChannelId int64) (*Channel, error) {
+func FindOrCreateChannel(discordChannelId, discordGuildId int64) (*Channel, error) {
 	channel, err := FindChannel(discordChannelId)
 	if err != nil {
 		return nil, errors.WithStack(err)
 	}
 	if channel.ID == 0 {
 		channel.DiscordChannelId = discordChannelId
+		channel.DiscordGuildId = discordGuildId
 		channel.Timezone = defaultTimezone
 		if err := dbs.Create(&channel).Error; err != nil {
 			return nil, errors.WithStack(err)
