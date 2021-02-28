@@ -26,28 +26,41 @@ type Recruitment struct {
 	Participants []Participant `gorm:"foreignkey:RecruitmentId"`
 }
 
+// 指定ラベルの募集を取得する
+// ユーザー名、ニックネームは取得しない
 func FetchActiveRecruitmentWithLabel(channelId uint, label int) (*Recruitment, error) {
 	recruitment := &Recruitment{}
-	err := dbs.Preload("Participants.User").Preload("Participants").Take(recruitment, "channel_id=? AND active=? AND label=?", channelId, true, label).Error
+	err := dbs.
+		Preload("Participants").
+		Take(recruitment, "channel_id=? AND active=? AND label=?", channelId, true, label).
+		Error
 	if basic_errors.Is(err, gorm.ErrRecordNotFound) {
 		return recruitment, nil
 	}
 	return recruitment, errors.WithStack(err)
 }
 
-func FetchActiveRecruitments(channelId uint) ([]*Recruitment, error) {
+// 指定チャンネルの全募集を取得する
+// ユーザー名、ニックネームも取得する
+func FetchActiveRecruitments(channel *Channel) ([]*Recruitment, error) {
 	recruitments := []*Recruitment{}
-	err := dbs.Preload("Participants.User").Preload("Participants").Order("label ASC").Find(&recruitments, "channel_id=? AND active=?", channelId, true).Error
+	err := dbs.
+		Preload("Participants.User.Nickname", "discord_guild_id=?", channel.DiscordGuildId).
+		Preload("Participants.User").
+		Preload("Participants").
+		Order("label ASC").
+		Find(&recruitments, "channel_id=? AND active=?", channel.ID, true).
+		Error
 	return recruitments, errors.WithStack(err)
 }
 
-func ResurrectClosedRecruitment(channelId uint) (*Recruitment, error) {
+func ResurrectClosedRecruitment(channel *Channel) (*Recruitment, error) {
 	recruitment := &Recruitment{}
-	err := dbs.Order("updated_at ASC").First(recruitment, "channel_id=? AND active=? AND expire_at>?", channelId, false, time.Now()).Error
+	err := dbs.Order("updated_at ASC").First(recruitment, "channel_id=? AND active=? AND expire_at>?", channel.ID, false, time.Now()).Error
 	if err != nil {
 		return nil, errors.WithStack(err)
 	} else if recruitment.ID != 0 {
-		label, err := fetchEmptyLabel(channelId)
+		label, err := fetchEmptyLabel(channel)
 		if err != nil {
 			return nil, err
 		}
@@ -80,7 +93,7 @@ func InsertRecruitment(user *User, channel *Channel, title string, capacity uint
 		expireAt = time.Now().Add(time.Minute * 60)
 	}
 
-	label, err := fetchEmptyLabel(channel.ID)
+	label, err := fetchEmptyLabel(channel)
 	if err != nil {
 		return nil, "", err
 	}
@@ -209,7 +222,7 @@ func (r *Recruitment) AuthorName() string {
 	if len(r.Participants) <= 0 {
 		return ""
 	}
-	return r.Participants[0].User.Name
+	return r.Participants[0].User.DisplayName()
 }
 
 func (r *Recruitment) MemberNames() []string {
@@ -219,7 +232,7 @@ func (r *Recruitment) MemberNames() []string {
 	memberSize := len(r.Participants) - 1
 	names := make([]string, memberSize, memberSize)
 	for i, p := range r.Participants[1:] {
-		names[i] = p.User.Name
+		names[i] = p.User.DisplayName()
 	}
 	return names
 }
@@ -238,8 +251,8 @@ func (r *Recruitment) ExpireAtTime(timezone *time.Location) string {
 	return r.ExpireAt.In(timezone).Format("15:04")
 }
 
-func fetchEmptyLabel(channelId uint) (uint, error) {
-	recruitments, err := FetchActiveRecruitments(channelId)
+func fetchEmptyLabel(channel *Channel) (uint, error) {
+	recruitments, err := FetchActiveRecruitments(channel)
 	if err != nil {
 		return 0, err
 	}
