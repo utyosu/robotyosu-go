@@ -2,8 +2,8 @@ package db
 
 import (
 	basic_errors "errors"
-	"github.com/jinzhu/gorm"
 	"github.com/pkg/errors"
+	"gorm.io/gorm"
 )
 
 type User struct {

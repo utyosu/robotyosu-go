@@ -1,8 +1,8 @@
 package db
 
 import (
-	"github.com/jinzhu/gorm"
 	"github.com/pkg/errors"
+	"gorm.io/gorm"
 )
 
 type TwitterConfig struct {
