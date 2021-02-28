@@ -252,9 +252,13 @@ func (r *Recruitment) ExpireAtTime(timezone *time.Location) string {
 }
 
 func fetchEmptyLabel(channel *Channel) (uint, error) {
-	recruitments, err := FetchActiveRecruitments(channel)
+	recruitments := []*Recruitment{}
+	err := dbs.
+		Select("label").
+		Find(&recruitments, "channel_id=? AND active=?", channel.ID, true).
+		Error
 	if err != nil {
-		return 0, err
+		return 0, errors.WithStack(err)
 	}
 	maxLabel := uint(1)
 	for _, recruitment := range recruitments {
