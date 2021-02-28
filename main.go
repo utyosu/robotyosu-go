@@ -29,8 +29,7 @@ func init() {
 func main() {
 	defer notifySlackWhenPanic("main")
 
-	dbs := db.ConnectDb()
-	defer dbs.Close()
+	db.ConnectDb()
 
 	var err error
 	discordSession, err = discordgo.New()

@@ -19,6 +19,7 @@ const (
 	DbHost              = "127.0.0.1"
 	DbPort              = "3306"
 	DbName              = "database_name"
+	DbLogLevel          = "info" // silent, error, warn, info
 	SlackToken          = "TOKEN"
 	SlackChannelWarning = "#channel-name-warning"
 	SlackChannelAlert   = "#channel-name-alert"
