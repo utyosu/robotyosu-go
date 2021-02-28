@@ -40,7 +40,7 @@ func actionAllChannel(s *discordgo.Session, m *discordgo.MessageCreate, discordC
 		} else if channel.ID != 0 {
 			language = channel.Language
 		}
-		sendMessage(m.ChannelID, i18n.HelpBasicCommand(language))
+		sendMessage(m.ChannelID, i18n.HelpBasicCommands(language))
 	}
 	return nil
 }

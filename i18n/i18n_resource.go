@@ -68,7 +68,7 @@ var (
 		},
 	}
 
-	helpBasicCommand = map[string][]commandSet{
+	helpBasicCommands = map[string][]commandSet{
 		"ja": []commandSet{
 			{".rt enable", "ロボちょすBOTの有効化"},
 			{".rt disable", "ロボちょすBOTの無効化"},
@@ -90,6 +90,25 @@ var (
 			{".rt timezone", "Show timezone"},
 			{".rt timezone ${TIMEZONE}", "Change timezone"},
 			{"help", "How to use recruitment"},
+		},
+	}
+
+	helpRecruitmentCommands = map[string][]commandSet{
+		"ja": []commandSet{
+			{"募集内容@<数字>", "募集の開始 (例「ゲームしましょう@3」)"},
+			{"<数字>参加", "募集に参加 (例「1参加」)"},
+			{"<数字>キャンセル", "参加キャンセル (例「1キャンセル」)"},
+			{"<数字>しめ", "募集の終了 (例「1しめ」)"},
+			{"復活", "最後に終了した募集を再開"},
+			{"案件", "最新の募集状態を表示"},
+		},
+		"en": []commandSet{
+			{"Recruitment contents@<number>", "Start recruitment (ex. Play games@3)"},
+			{"<number>join", "Join recruitment (ex. 1 join)"},
+			{"<number>cancel", "Cancel participation (ex. 1 cancel)"},
+			{"<number>close", "Close recruitment (ex. 1 close)"},
+			{"resume", "Resume the last closed recruitment"},
+			{"list", "Show recruitments"},
 		},
 	}
 )

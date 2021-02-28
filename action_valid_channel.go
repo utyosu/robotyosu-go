@@ -11,11 +11,11 @@ import (
 )
 
 var (
-	regexpShowHelp     = regexp.MustCompile(`\A` + commandPrefix + `\s+help\z`)
-	regexpShowTimezone = regexp.MustCompile(`\A` + commandPrefix + `\s+timezone\z`)
-	regexpSetTimezone  = regexp.MustCompile(`\A` + commandPrefix + `\s+timezone\s+([\w/]+)\z`)
-	regexpShowLanguage = regexp.MustCompile(`\A` + commandPrefix + `\s+language\z`)
-	regexpSetLanguage  = regexp.MustCompile(`\A` + commandPrefix + `\s+language\s+([\w/]+)\z`)
+	regexpShowTimezone        = regexp.MustCompile(`\A` + commandPrefix + `\s+timezone\z`)
+	regexpSetTimezone         = regexp.MustCompile(`\A` + commandPrefix + `\s+timezone\s+([\w/]+)\z`)
+	regexpShowLanguage        = regexp.MustCompile(`\A` + commandPrefix + `\s+language\z`)
+	regexpSetLanguage         = regexp.MustCompile(`\A` + commandPrefix + `\s+language\s+([\w/]+)\z`)
+	regexpShowRecruitmentHelp = regexp.MustCompile(`使い方|ヘルプ|help`)
 )
 
 func actionValidChannel(s *discordgo.Session, m *discordgo.MessageCreate, channel *db.Channel) error {
@@ -65,6 +65,10 @@ func actionValidChannel(s *discordgo.Session, m *discordgo.MessageCreate, channe
 			return err
 		}
 		sendMessage(m.ChannelID, fmt.Sprintf("Language changed to %v", languageString))
+
+	// 募集機能のヘルプ
+	case regexpShowRecruitmentHelp.MatchString(m.Content):
+		sendMessage(m.ChannelID, i18n.HelpRecruitmentCommands(i18n.ToLanguage(channel.Language)))
 	}
 
 	return nil
