@@ -2,9 +2,9 @@ package db
 
 import (
 	basic_errors "errors"
-	"github.com/jinzhu/gorm"
 	"github.com/pkg/errors"
 	"github.com/utyosu/robotyosu-go/i18n"
+	"gorm.io/gorm"
 	"time"
 )
 
