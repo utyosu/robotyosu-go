@@ -56,7 +56,10 @@ func FetchActiveRecruitments(channel *Channel) ([]*Recruitment, error) {
 
 func ResurrectClosedRecruitment(channel *Channel) (*Recruitment, error) {
 	recruitment := &Recruitment{}
-	err := dbs.Order("updated_at ASC").First(recruitment, "channel_id=? AND active=? AND expire_at>?", channel.ID, false, time.Now()).Error
+	err := dbs.
+		Order("updated_at DESC").
+		First(recruitment, "channel_id=? AND active=? AND expire_at>?", channel.ID, false, time.Now()).
+		Error
 	if err != nil {
 		return nil, errors.WithStack(err)
 	} else if recruitment.ID != 0 {
