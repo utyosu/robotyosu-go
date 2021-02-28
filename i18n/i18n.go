@@ -12,10 +12,22 @@ func CommonMessage(key string) string {
 	return commonDictionary[key]
 }
 
-func HelpBasicCommand(lang string) string {
+func HelpBasicCommands(lang string) string {
+	return buildCommands(ToLanguage(lang), helpBasicCommands)
+}
+
+func HelpRecruitmentCommands(lang string) string {
+	return buildCommands(ToLanguage(lang), helpRecruitmentCommands)
+}
+
+func buildCommands(lang string, commands map[string][]commandSet) string {
 	var ret string
-	for _, c := range helpBasicCommand[ToLanguage(lang)] {
-		ret += fmt.Sprintf("`%v` %v\n", c.command, c.description)
+	for _, c := range commands[ToLanguage(lang)] {
+		if c.command == "" {
+			ret += fmt.Sprintf("\n%v\n", c.description)
+		} else {
+			ret += fmt.Sprintf("`%v` %v\n", c.command, c.description)
+		}
 	}
 	return ret
 }

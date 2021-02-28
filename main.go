@@ -29,8 +29,7 @@ func init() {
 func main() {
 	defer notifySlackWhenPanic("main")
 
-	dbs := db.ConnectDb()
-	defer dbs.Close()
+	db.ConnectDb()
 
 	var err error
 	discordSession, err = discordgo.New()
@@ -71,9 +70,11 @@ func onMessageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 	discordChannelId, _ := strconv.ParseInt(m.ChannelID, 10, 64)
 
 	// 全チャンネルで使えるコマンド
-	if err := actionAllChannel(s, m, discordChannelId); err != nil {
+	if processed, err := actionAllChannel(s, m, discordChannelId); err != nil {
 		sendMessage(m.ChannelID, i18n.T(i18n.DefaultLanguage, "error"))
 		postSlackWarning(err)
+		return
+	} else if processed {
 		return
 	}
 
@@ -83,14 +84,16 @@ func onMessageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 		return
 	}
 
-	if !channel.IsValidAnyFunction() {
+	if !channel.IsEnabledRecruitment() {
 		return
 	}
 
 	// 何かしらの機能が有効なチャンネルで使えるコマンド
-	if err := actionValidChannel(s, m, channel); err != nil {
+	if processed, err := actionSetting(s, m, channel); err != nil {
 		postSlackWarning(err)
 		sendMessageT(channel, "error")
+		return
+	} else if processed {
 		return
 	}
 

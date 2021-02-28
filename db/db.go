@@ -2,9 +2,10 @@ package db
 
 import (
 	"fmt"
-	"github.com/jinzhu/gorm"
-	_ "github.com/jinzhu/gorm/dialects/mysql"
 	"github.com/utyosu/robotyosu-go/env"
+	"gorm.io/driver/mysql"
+	"gorm.io/gorm"
+	"gorm.io/gorm/logger"
 )
 
 var (
@@ -13,16 +14,30 @@ var (
 
 func ConnectDb() *gorm.DB {
 	var err error
+	dsn := fmt.Sprintf(
+		"%s:%s@tcp(%s:%s)/%s?parseTime=true",
+		env.DbUser,
+		env.DbPassword,
+		env.DbHost,
+		env.DbPort,
+		env.DbName,
+	)
+
+	logLevel := logger.Warn
+	switch env.DbLogLevel {
+	case "silent":
+		logLevel = logger.Silent
+	case "error":
+		logLevel = logger.Error
+	case "info":
+		logLevel = logger.Info
+	}
+
 	dbs, err = gorm.Open(
-		env.DbDriver,
-		fmt.Sprintf(
-			"%s:%s@tcp(%s:%s)/%s?parseTime=true",
-			env.DbUser,
-			env.DbPassword,
-			env.DbHost,
-			env.DbPort,
-			env.DbName,
-		),
+		mysql.Open(dsn),
+		&gorm.Config{
+			Logger: logger.Default.LogMode(logLevel),
+		},
 	)
 
 	if err != nil {

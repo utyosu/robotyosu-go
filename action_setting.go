@@ -11,18 +11,25 @@ import (
 )
 
 var (
-	regexpShowHelp     = regexp.MustCompile(`\A` + commandPrefix + `\s+help\z`)
-	regexpShowTimezone = regexp.MustCompile(`\A` + commandPrefix + `\s+timezone\z`)
-	regexpSetTimezone  = regexp.MustCompile(`\A` + commandPrefix + `\s+timezone\s+([\w/]+)\z`)
-	regexpShowLanguage = regexp.MustCompile(`\A` + commandPrefix + `\s+language\z`)
-	regexpSetLanguage  = regexp.MustCompile(`\A` + commandPrefix + `\s+language\s+([\w/]+)\z`)
+	regexpShowTimezone        = regexp.MustCompile(`\A` + commandPrefix + `\s+timezone\z`)
+	regexpSetTimezone         = regexp.MustCompile(`\A` + commandPrefix + `\s+timezone\s+([\w/]+)\z`)
+	regexpShowLanguage        = regexp.MustCompile(`\A` + commandPrefix + `\s+language\z`)
+	regexpSetLanguage         = regexp.MustCompile(`\A` + commandPrefix + `\s+language\s+([\w/]+)\z`)
+	regexpShowRecruitmentHelp = regexp.MustCompile(`使い方|ヘルプ|help`)
 )
 
-func actionValidChannel(s *discordgo.Session, m *discordgo.MessageCreate, channel *db.Channel) error {
+func actionSetting(s *discordgo.Session, m *discordgo.MessageCreate, channel *db.Channel) (bool, error) {
 	switch {
 	// タイムゾーンの参照
 	case regexpShowTimezone.MatchString(m.Content):
-		sendMessage(m.ChannelID, fmt.Sprintf("Timezone is %v\n", channel.Timezone))
+		sendMessage(
+			m.ChannelID,
+			fmt.Sprintf(
+				"Current timezone is %v\nAvailable timezone example: America/New_York, Asia/Singapore, Asia/Tokyo, ...\n",
+				channel.Timezone,
+			),
+		)
+		return true, nil
 
 	// タイムゾーンの変更
 	case regexpSetTimezone.MatchString(m.Content):
@@ -30,10 +37,10 @@ func actionValidChannel(s *discordgo.Session, m *discordgo.MessageCreate, channe
 		_, err := time.LoadLocation(timezoneString)
 		if err != nil {
 			sendMessage(m.ChannelID, fmt.Sprintf("No such timezone: %v", timezoneString))
-			return nil
+			return true, nil
 		}
 		if err = channel.UpdateChannelTimezone(timezoneString); err != nil {
-			return err
+			return true, err
 		}
 		sendMessage(m.ChannelID, fmt.Sprintf("Timezone changed to %v", timezoneString))
 
@@ -47,19 +54,25 @@ func actionValidChannel(s *discordgo.Session, m *discordgo.MessageCreate, channe
 				strings.Join(i18n.Languages, ", "),
 			),
 		)
+		return true, nil
 
 	// 言語の変更
 	case regexpSetLanguage.MatchString(m.Content):
 		languageString := getMatchRegexpString(m.Content, regexpSetLanguage)
 		if languageString != i18n.ToLanguage(languageString) {
 			sendMessage(m.ChannelID, fmt.Sprintf("No such language: %v", languageString))
-			return nil
+			return true, nil
 		}
 		if err := channel.UpdateChannelLanguage(languageString); err != nil {
-			return err
+			return true, err
 		}
 		sendMessage(m.ChannelID, fmt.Sprintf("Language changed to %v", languageString))
+
+	// 募集機能のヘルプ
+	case regexpShowRecruitmentHelp.MatchString(m.Content):
+		sendMessage(m.ChannelID, i18n.HelpRecruitmentCommands(i18n.ToLanguage(channel.Language)))
+		return true, nil
 	}
 
-	return nil
+	return false, nil
 }

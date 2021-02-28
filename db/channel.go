@@ -54,7 +54,7 @@ func FetchAllChannels() ([]*Channel, error) {
 	return channels, errors.WithStack(err)
 }
 
-func (c *Channel) IsValidAnyFunction() bool {
+func (c *Channel) IsEnabledRecruitment() bool {
 	return c.ID != 0 && c.Recruitment
 }
 
