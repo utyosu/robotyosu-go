@@ -18,7 +18,7 @@ var (
 	regexpShowRecruitmentHelp = regexp.MustCompile(`使い方|ヘルプ|help`)
 )
 
-func actionValidChannel(s *discordgo.Session, m *discordgo.MessageCreate, channel *db.Channel) (bool, error) {
+func actionSetting(s *discordgo.Session, m *discordgo.MessageCreate, channel *db.Channel) (bool, error) {
 	switch {
 	// タイムゾーンの参照
 	case regexpShowTimezone.MatchString(m.Content):

@@ -85,12 +85,12 @@ func onMessageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 		return
 	}
 
-	if !channel.IsValidAnyFunction() {
+	if !channel.IsEnabledRecruitment() {
 		return
 	}
 
 	// 何かしらの機能が有効なチャンネルで使えるコマンド
-	if processed, err := actionValidChannel(s, m, channel); err != nil {
+	if processed, err := actionSetting(s, m, channel); err != nil {
 		postSlackWarning(err)
 		sendMessageT(channel, "error")
 		return
