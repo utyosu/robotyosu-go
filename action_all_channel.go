@@ -4,13 +4,16 @@ import (
 	"github.com/bwmarrin/discordgo"
 	"github.com/utyosu/robotyosu-go/db"
 	"github.com/utyosu/robotyosu-go/i18n"
+	"strconv"
 )
 
-func actionAllChannel(s *discordgo.Session, m *discordgo.MessageCreate, discordChannelId int64) (bool, error) {
+func actionAllChannel(s *discordgo.Session, m *discordgo.MessageCreate) (bool, error) {
 	switch {
 	// 有効化
 	case m.Content == (commandPrefix + " enable"):
-		channel, err := db.FindOrCreateChannel(discordChannelId)
+		discordChannelId, _ := strconv.ParseInt(m.ChannelID, 10, 64)
+		discordGuildId, _ := strconv.ParseInt(m.GuildID, 10, 64)
+		channel, err := db.FindOrCreateChannel(discordChannelId, discordGuildId)
 		if err != nil {
 			return true, err
 		}
@@ -22,7 +25,9 @@ func actionAllChannel(s *discordgo.Session, m *discordgo.MessageCreate, discordC
 
 	// 無効化
 	case m.Content == (commandPrefix + " disable"):
-		channel, err := db.FindOrCreateChannel(discordChannelId)
+		discordChannelId, _ := strconv.ParseInt(m.ChannelID, 10, 64)
+		discordGuildId, _ := strconv.ParseInt(m.GuildID, 10, 64)
+		channel, err := db.FindOrCreateChannel(discordChannelId, discordGuildId)
 		if err != nil {
 			return true, err
 		}
@@ -34,6 +39,7 @@ func actionAllChannel(s *discordgo.Session, m *discordgo.MessageCreate, discordC
 
 	// コマンドヘルプの表示
 	case m.Content == (commandPrefix + " help"):
+		discordChannelId, _ := strconv.ParseInt(m.ChannelID, 10, 64)
 		language := i18n.DefaultLanguage
 
 		// チャンネルが見つかれば言語を設定する

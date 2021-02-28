@@ -15,6 +15,7 @@ DROP TABLE IF EXISTS `channels`;
 CREATE TABLE `channels` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `discord_channel_id` bigint(20) NOT NULL,
+  `discord_guild_id` bigint(20) NOT NULL,
   `recruitment` tinyint(1) NOT NULL,
   `timezone` varchar(30) NOT NULL,
   `language` varchar(10) NOT NULL DEFAULT '',

@@ -67,10 +67,8 @@ func onMessageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 		return
 	}
 
-	discordChannelId, _ := strconv.ParseInt(m.ChannelID, 10, 64)
-
 	// 全チャンネルで使えるコマンド
-	if processed, err := actionAllChannel(s, m, discordChannelId); err != nil {
+	if processed, err := actionAllChannel(s, m); err != nil {
 		sendMessage(m.ChannelID, i18n.T(i18n.DefaultLanguage, "error"))
 		postSlackWarning(err)
 		return
@@ -78,6 +76,7 @@ func onMessageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 		return
 	}
 
+	discordChannelId, _ := strconv.ParseInt(m.ChannelID, 10, 64)
 	channel, err := db.FindChannel(discordChannelId)
 	if err != nil {
 		postSlackWarning(err)
