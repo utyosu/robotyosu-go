@@ -22,7 +22,13 @@ func actionValidChannel(s *discordgo.Session, m *discordgo.MessageCreate, channe
 	switch {
 	// タイムゾーンの参照
 	case regexpShowTimezone.MatchString(m.Content):
-		sendMessage(m.ChannelID, fmt.Sprintf("Timezone is %v\n", channel.Timezone))
+		sendMessage(
+			m.ChannelID,
+			fmt.Sprintf(
+				"Current timezone is %v\nAvailable timezone example: America/New_York, Asia/Singapore, Asia/Tokyo, ...\n",
+				channel.Timezone,
+			),
+		)
 
 	// タイムゾーンの変更
 	case regexpSetTimezone.MatchString(m.Content):
