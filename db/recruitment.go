@@ -118,7 +118,7 @@ func InsertRecruitment(user *User, channel *Channel, title string, capacity uint
 	if err := InsertParticipant(user, recruitment); err != nil {
 		return nil, "", err
 	}
-	recruitment.Reload()
+	recruitment.Reload(channel)
 	return recruitment, "", nil
 }
 
@@ -128,7 +128,7 @@ func (r *Recruitment) CloseRecruitment() error {
 	return errors.WithStack(err)
 }
 
-func (r *Recruitment) JoinParticipant(user *User) (bool, error) {
+func (r *Recruitment) JoinParticipant(user *User, channel *Channel) (bool, error) {
 	// 既に参加していれば失敗にする
 	for _, participant := range r.Participants {
 		if participant.UserId == user.ID {
@@ -139,17 +139,17 @@ func (r *Recruitment) JoinParticipant(user *User) (bool, error) {
 	if err := InsertParticipant(user, r); err != nil {
 		return false, err
 	}
-	r.Reload()
+	r.Reload(channel)
 	return true, nil
 }
 
-func (r *Recruitment) LeaveParticipant(user *User) (bool, error) {
+func (r *Recruitment) LeaveParticipant(user *User, channel *Channel) (bool, error) {
 	for _, p := range r.Participants {
 		if p.RecruitmentId == r.ID && p.UserId == user.ID {
 			if err := p.Delete(); err != nil {
 				return false, err
 			}
-			r.Reload()
+			r.Reload(channel)
 			if len(r.Participants) == 0 {
 				if err := r.CloseRecruitment(); err != nil {
 					return false, err
@@ -216,9 +216,13 @@ func (r *Recruitment) UpdateTweetId(id int64) error {
 	return errors.WithStack(err)
 }
 
-func (r *Recruitment) Reload() {
+func (r *Recruitment) Reload(channel *Channel) {
 	// リロードは失敗しても影響が少ないのでエラーは無視する
-	dbs.Preload("Participants.User").Preload("Participants").Take(r, "id=?", r.ID)
+	dbs.
+		Preload("Participants.User.Nickname", "discord_guild_id=?", channel.DiscordGuildId).
+		Preload("Participants.User").
+		Preload("Participants").
+		Take(r, "id=?", r.ID)
 }
 
 func (r *Recruitment) AuthorName() string {
