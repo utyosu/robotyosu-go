@@ -4,9 +4,9 @@ import (
 	"fmt"
 	"github.com/dghubble/go-twitter/twitter"
 	"github.com/dghubble/oauth1"
+	"github.com/pkg/errors"
 	"github.com/utyosu/robotyosu-go/db"
 	"github.com/utyosu/robotyosu-go/i18n"
-	"log"
 	"regexp"
 	"strings"
 )
@@ -38,12 +38,23 @@ func tweet(c *db.Channel, r *db.Recruitment, t TwitterType) {
 		postSlackWarning(err)
 		return
 	} else if twitterConfig.ID == 0 {
-		log.Println("[Error] TwitterConfig が見つかりません。")
+		postSlackWarning(
+			fmt.Errorf(
+				"TwitterConfig が見つかりません。\nChannelId: %v",
+				c.ID,
+			),
+		)
 		return
 	}
 
 	if r.TweetId == 0 && t != TwitterTypeOpen {
-		log.Println("[Error] 募集開始ではないのにリプライ用のTweetIdが見つかりません。")
+		postSlackWarning(
+			fmt.Errorf(
+				"募集開始ではないのにリプライ用のTweetIdが見つかりません。\nChannelId: %v\nRecruitmentId: %v",
+				c.ID,
+				r.ID,
+			),
+		)
 		return
 	}
 
@@ -58,12 +69,13 @@ func tweet(c *db.Channel, r *db.Recruitment, t TwitterType) {
 	msg := buildTwitterMessage(twitterConfig, c, r, t)
 	tweet, _, err := twitterClient.Statuses.Update(toTwitterSafe(msg), status)
 	if err != nil {
-		log.Println(err)
+		sendMessageT(c, "twitter_error")
+		postSlackWarning(errors.WithStack(err))
 		return
 	}
 	if err := r.UpdateTweetId(tweet.ID); err != nil {
 		// DB更新は失敗してもツイートが成功しているので、ユーザーにエラーは出力しない
-		postSlackWarning(err)
+		postSlackWarning(errors.WithStack(err))
 	}
 	return
 }

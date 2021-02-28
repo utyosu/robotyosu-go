@@ -41,6 +41,7 @@ var (
 			"twitter_members":       "参加者: %v",
 			"twitter_close":         "%v\nこの募集は終了しました。",
 			"error":                 "エラーが発生しました。何度も発生する場合は開発者にお問い合わせ下さい。",
+			"twitter_error":         "ツイートの投稿に失敗しました。何度も発生する場合は開発者にお問い合わせ下さい。",
 		},
 		"en": map[string]string{
 			"recruit":               "[%v] %v by %v",
@@ -65,6 +66,7 @@ var (
 			"twitter_members":       "members: %v",
 			"twitter_close":         "%v\nThis recruitment is closed.",
 			"error":                 "Cause error.",
+			"twitter_error":         "Post tweet error.",
 		},
 	}
 
