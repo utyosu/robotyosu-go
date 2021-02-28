@@ -84,11 +84,12 @@ var (
 			{".rt enable", "Enable robotyosu bot"},
 			{".rt disable", "Disable robotyosu bot"},
 			{".rt help", "Show setting commands."},
+			{"", "Available after enables"},
 			{".rt language", "Show language"},
 			{".rt language ${LANGUAGE}", "Change language"},
 			{".rt timezone", "Show timezone"},
 			{".rt timezone ${TIMEZONE}", "Change timezone"},
-			{"help", "How to use recruitment (can use after enabled)"},
+			{"help", "How to use recruitment"},
 		},
 	}
 )
