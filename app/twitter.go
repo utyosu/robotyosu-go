@@ -1,4 +1,4 @@
-package main
+package app
 
 import (
 	"fmt"
@@ -103,7 +103,6 @@ func toTwitterSafe(s string) string {
 
 func short140ForTwitter(s string) string {
 	runes := []rune(s)
-	fmt.Printf("runes-len:%v\n", len(runes))
 	if len(runes) <= 140 {
 		return s
 	}
