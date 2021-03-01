@@ -19,7 +19,7 @@ var (
 
 	languageDictionary = map[string]map[string]string{
 		"ja": map[string]string{
-			"recruit":               "[%v] %v by %v",
+			"recruit":               "[%v] %v by %v (%v/%v)",
 			"participants":          "    参加者: %s",
 			"no_recruitment":        "募集はありません",
 			"not_join_because_full": "[%v] は満員なので参加できませんでした(´・ω・`)ｼｮﾎﾞｰﾝ",
@@ -44,7 +44,7 @@ var (
 			"twitter_error":         "ツイートの投稿に失敗しました。何度も発生する場合は開発者にお問い合わせ下さい。",
 		},
 		"en": map[string]string{
-			"recruit":               "[%v] %v by %v",
+			"recruit":               "[%v] %v by %v (%v/%v)",
 			"participants":          "    Members: %s",
 			"no_recruitment":        "No recruitments.",
 			"not_join_because_full": "You cannot join [%v] because full. :_(",
