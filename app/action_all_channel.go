@@ -1,10 +1,14 @@
-package main
+package app
 
 import (
 	"github.com/bwmarrin/discordgo"
 	"github.com/utyosu/robotyosu-go/db"
 	"github.com/utyosu/robotyosu-go/i18n"
 	"strconv"
+)
+
+const (
+	commandPrefix = ".rt"
 )
 
 func actionAllChannel(s *discordgo.Session, m *discordgo.MessageCreate) (bool, error) {

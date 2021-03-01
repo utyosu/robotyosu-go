@@ -1,4 +1,4 @@
-package main
+package app
 
 import (
 	"fmt"
@@ -45,7 +45,7 @@ func doFuncSchedule(f func(), interval time.Duration) *time.Ticker {
 	return ticker
 }
 
-func notifySlackWhenPanic(info string) {
+func NotifySlackWhenPanic(info string) {
 	if err := recover(); err != nil {
 		postSlackAlert(fmt.Sprintf("panic: %v\ninfo: %v", err, info))
 	}

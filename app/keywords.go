@@ -1,4 +1,4 @@
-package main
+package app
 
 var (
 	keywordsViewRecruitment = []string{
