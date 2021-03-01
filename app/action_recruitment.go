@@ -234,7 +234,7 @@ func viewActiveRecruitments(c *db.Channel) {
 				continue
 			}
 
-			m += i18n.T(c.Language, "recruit", r.Label, r.Title, r.AuthorName()) + "\n"
+			m += i18n.T(c.Language, "recruit", r.Label, r.Title, r.AuthorName(), len(r.Participants)-1, r.Capacity-1) + "\n"
 
 			// 参加者が2名以上ならメンバーを表示する
 			memberNames := r.MemberNames()
