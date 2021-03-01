@@ -32,7 +32,7 @@ func actionRecruitment(s *discordgo.Session, m *discordgo.MessageCreate, channel
 
 	// 参加
 	case isContainKeywords(formattedContent, keywordsJoinRecruitment):
-		recruitment, err := fetchRecruitmentWithMessage(formattedContent, channel.ID)
+		recruitment, err := fetchRecruitmentWithMessage(formattedContent, channel)
 		if err != nil {
 			return err
 		} else if recruitment == nil {
@@ -64,7 +64,7 @@ func actionRecruitment(s *discordgo.Session, m *discordgo.MessageCreate, channel
 
 	// キャンセル
 	case isContainKeywords(formattedContent, keywordsCancelRecruitment):
-		recruitment, err := fetchRecruitmentWithMessage(formattedContent, channel.ID)
+		recruitment, err := fetchRecruitmentWithMessage(formattedContent, channel)
 		if err != nil {
 			return err
 		} else if recruitment == nil {
@@ -105,7 +105,7 @@ func actionRecruitment(s *discordgo.Session, m *discordgo.MessageCreate, channel
 
 	// 終了
 	case isContainKeywords(formattedContent, keywordsCloseRecruitment):
-		recruitment, err := fetchRecruitmentWithMessage(formattedContent, channel.ID)
+		recruitment, err := fetchRecruitmentWithMessage(formattedContent, channel)
 		if err != nil {
 			return err
 		} else if recruitment == nil {
@@ -131,12 +131,16 @@ func actionRecruitment(s *discordgo.Session, m *discordgo.MessageCreate, channel
 	return nil
 }
 
-func fetchRecruitmentWithMessage(content string, channelId uint) (*db.Recruitment, error) {
-	number := msg.ExtractNumber(trimMention(content))
-	if number == 0 {
+func fetchRecruitmentWithMessage(content string, channel *db.Channel) (*db.Recruitment, error) {
+	result, number := msg.ExtractNumber(trimMention(content))
+	switch result {
+	case msg.ExtractResultNotFoundNumber:
+		return nil, nil
+	case msg.ExtractResultMultipleNumber:
+		sendMessageT(channel, "multiple_number")
 		return nil, nil
 	}
-	recruitment, err := db.FetchActiveRecruitmentWithLabel(channelId, number)
+	recruitment, err := db.FetchActiveRecruitmentWithLabel(channel.ID, number)
 	if err != nil {
 		return nil, err
 	}
