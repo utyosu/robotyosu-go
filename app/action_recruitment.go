@@ -18,13 +18,9 @@ var (
 	regexpFormatContentDeleteWord = regexp.MustCompile(`\r\n|\r|\n`)
 )
 
-func formatContent(s string) string {
-	s = width.Fold.String(s)
-	return regexpFormatContentDeleteWord.ReplaceAllString(s, "")
-}
-
 func actionRecruitment(s *discordgo.Session, m *discordgo.MessageCreate, channel *db.Channel, user *db.User) error {
-	formattedContent := formatContent(m.Content)
+	rawContent := regexpFormatContentDeleteWord.ReplaceAllString(m.Content, "")
+	formattedContent := width.Fold.String(rawContent)
 	switch {
 	// 一覧
 	case isContainKeywords(formattedContent, keywordsViewRecruitment):
@@ -39,7 +35,7 @@ func actionRecruitment(s *discordgo.Session, m *discordgo.MessageCreate, channel
 		now := time.Now().In(timezone)
 		reserveAt := msg.ParseTime(formattedContent, now)
 		capacity := uint(getMatchRegexpNumber(formattedContent, regexpOpenRecruitment) + 1)
-		recruitment, msg, err := db.InsertRecruitment(user, channel, formattedContent, capacity, reserveAt)
+		recruitment, msg, err := db.InsertRecruitment(user, channel, rawContent, capacity, reserveAt)
 		if err != nil {
 			return err
 		} else if recruitment == nil {

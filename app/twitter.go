@@ -98,7 +98,7 @@ func buildTwitterMessage(twitterConfig *db.TwitterConfig, c *db.Channel, r *db.R
 }
 
 func toTwitterSafe(s string) string {
-	return regexp.MustCompile(`@`).ReplaceAllString(s, "@ ")
+	return regexp.MustCompile(`@|＠`).ReplaceAllString(s, "@ ")
 }
 
 func short140ForTwitter(s string) string {
