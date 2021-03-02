@@ -9,7 +9,7 @@ import (
 )
 
 const (
-	maxTitleLength = 100
+	maxTitleRunes = 100
 )
 
 type Recruitment struct {
@@ -78,7 +78,7 @@ func ResurrectClosedRecruitment(channel *Channel) (*Recruitment, error) {
 }
 
 func InsertRecruitment(user *User, channel *Channel, title string, capacity uint, reserveAt *time.Time) (*Recruitment, string, error) {
-	if len(title) > maxTitleLength {
+	if len([]rune(title)) > maxTitleRunes {
 		return nil, i18n.T(channel.Language, "too_long_title"), nil
 	} else if capacity < 2 {
 		return nil, i18n.T(channel.Language, "capacity_less"), nil
