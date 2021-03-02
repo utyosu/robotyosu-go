@@ -18,16 +18,36 @@ var (
 	regexpFormatContentDeleteWord = regexp.MustCompile(`\r\n|\r|\n`)
 )
 
-func formatContent(s string) string {
-	s = width.Fold.String(s)
-	return regexpFormatContentDeleteWord.ReplaceAllString(s, "")
-}
-
 func actionRecruitment(s *discordgo.Session, m *discordgo.MessageCreate, channel *db.Channel, user *db.User) error {
-	formattedContent := formatContent(m.Content)
+	rawContent := regexpFormatContentDeleteWord.ReplaceAllString(m.Content, "")
+	formattedContent := width.Fold.String(rawContent)
 	switch {
 	// 一覧
 	case isContainKeywords(formattedContent, keywordsViewRecruitment):
+		viewActiveRecruitments(channel)
+
+	// 募集
+	case regexpOpenRecruitment.MatchString(formattedContent):
+		if haveMention(formattedContent) {
+			return nil
+		}
+		timezone := channel.LoadLocation()
+		now := time.Now().In(timezone)
+		reserveAt := msg.ParseTime(formattedContent, now)
+		capacity := uint(getMatchRegexpNumber(formattedContent, regexpOpenRecruitment) + 1)
+		recruitment, msg, err := db.InsertRecruitment(user, channel, rawContent, capacity, reserveAt)
+		if err != nil {
+			return err
+		} else if recruitment == nil {
+			sendMessage(m.ChannelID, msg)
+			return nil
+		}
+		tweet(channel, recruitment, TwitterTypeOpen)
+		if recruitment.ReserveAt != nil {
+			sendMessageT(channel, "open_with_reserve", user.DisplayName(), recruitment.Label, recruitment.ReserveAtTime(channel.LoadLocation()))
+		} else {
+			sendMessageT(channel, "open", user.DisplayName(), recruitment.Label, recruitment.ExpireAtTime(channel.LoadLocation()))
+		}
 		viewActiveRecruitments(channel)
 
 	// 参加
@@ -78,30 +98,6 @@ func actionRecruitment(s *discordgo.Session, m *discordgo.MessageCreate, channel
 			sendMessageT(channel, "leave", user.DisplayName(), recruitment.Label)
 			viewActiveRecruitments(channel)
 		}
-
-	// 募集
-	case regexpOpenRecruitment.MatchString(formattedContent):
-		if haveMention(formattedContent) {
-			return nil
-		}
-		timezone := channel.LoadLocation()
-		now := time.Now().In(timezone)
-		reserveAt := msg.ParseTime(formattedContent, now)
-		capacity := uint(getMatchRegexpNumber(formattedContent, regexpOpenRecruitment) + 1)
-		recruitment, msg, err := db.InsertRecruitment(user, channel, formattedContent, capacity, reserveAt)
-		if err != nil {
-			return err
-		} else if recruitment == nil {
-			sendMessage(m.ChannelID, msg)
-			return nil
-		}
-		tweet(channel, recruitment, TwitterTypeOpen)
-		if recruitment.ReserveAt != nil {
-			sendMessageT(channel, "open_with_reserve", user.DisplayName(), recruitment.Label, recruitment.ReserveAtTime(channel.LoadLocation()))
-		} else {
-			sendMessageT(channel, "open", user.DisplayName(), recruitment.Label, recruitment.ExpireAtTime(channel.LoadLocation()))
-		}
-		viewActiveRecruitments(channel)
 
 	// 終了
 	case isContainKeywords(formattedContent, keywordsCloseRecruitment):
