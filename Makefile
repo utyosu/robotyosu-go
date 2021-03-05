@@ -37,11 +37,11 @@ reset-db-local:
 
 migrate-db-up-local:
 	migrate -path db/migrations -database "mysql://${RBC_DATABASE_USER_LOCAL}:@tcp(${RBC_DATABASE_HOST_LOCAL}:${RBC_DATABASE_PORT_LOCAL})/${RBC_DATABASE_NAME_LOCAL}" up
-	mysqldump -u ${RBC_DATABASE_USER_LOCAL} -h ${RBC_DATABASE_HOST_LOCAL} -P ${RBC_DATABASE_PORT_LOCAL} ${RBC_DATABASE_NAME_LOCAL} -d --skip-comments > db/schema.sql
+	mysqldump -u ${RBC_DATABASE_USER_LOCAL} -h ${RBC_DATABASE_HOST_LOCAL} -P ${RBC_DATABASE_PORT_LOCAL} ${RBC_DATABASE_NAME_LOCAL} -d --skip-comments --no-tablespaces > db/schema.sql
 
 migrate-db-down-local:
 	migrate -path db/migrations -database "mysql://${RBC_DATABASE_USER_LOCAL}:@tcp(${RBC_DATABASE_HOST_LOCAL}:${RBC_DATABASE_PORT_LOCAL})/${RBC_DATABASE_NAME_LOCAL}" down 1
-	mysqldump -u ${RBC_DATABASE_USER_LOCAL} -h ${RBC_DATABASE_HOST_LOCAL} -P ${RBC_DATABASE_PORT_LOCAL} ${RBC_DATABASE_NAME_LOCAL} -d --skip-comments > db/schema.sql
+	mysqldump -u ${RBC_DATABASE_USER_LOCAL} -h ${RBC_DATABASE_HOST_LOCAL} -P ${RBC_DATABASE_PORT_LOCAL} ${RBC_DATABASE_NAME_LOCAL} -d --skip-comments --no-tablespaces > db/schema.sql
 
 migrate-db-production:
 	@echo -n "Are you sure? [y/N] " && read ans && [ $${ans:-N} = y ]
