@@ -3,3 +3,4 @@ env/env_local.go
 env/env_production.go
 .vscode/
 /test.sql
+db/migrations/tmp
