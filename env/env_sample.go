@@ -23,5 +23,6 @@ const (
 	SlackToken          = "TOKEN"
 	SlackChannelWarning = "#channel-name-warning"
 	SlackChannelAlert   = "#channel-name-alert"
+	SlackTitle          = "error notification"
 	ScheduledDuration   = 60
 )
