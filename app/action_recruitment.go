@@ -136,7 +136,7 @@ func fetchRecruitmentWithMessage(content string, channel *db.Channel) (*db.Recru
 		sendMessageT(channel, "multiple_number")
 		return nil, nil
 	}
-	recruitment, err := db.FetchActiveRecruitmentWithLabel(channel.ID, number)
+	recruitment, err := db.FetchActiveRecruitmentWithLabel(channel, number)
 	if err != nil {
 		return nil, err
 	}
