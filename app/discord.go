@@ -6,6 +6,7 @@ import (
 	"github.com/utyosu/robotyosu-go/db"
 	"github.com/utyosu/robotyosu-go/env"
 	"github.com/utyosu/robotyosu-go/i18n"
+	"github.com/utyosu/robotyosu-go/slack"
 	"log"
 	"strconv"
 	"time"
@@ -53,7 +54,7 @@ func onMessageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 	// 全チャンネルで使えるコマンド
 	if processed, err := actionAllChannel(s, m); err != nil {
 		sendMessage(m.ChannelID, i18n.T(i18n.DefaultLanguage, "error"))
-		postSlackWarning(err)
+		slack.PostSlackWarning(err)
 		return
 	} else if processed {
 		return
@@ -62,7 +63,7 @@ func onMessageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 	discordChannelId, _ := strconv.ParseInt(m.ChannelID, 10, 64)
 	channel, err := db.FindChannel(discordChannelId)
 	if err != nil {
-		postSlackWarning(err)
+		slack.PostSlackWarning(err)
 		return
 	}
 
@@ -72,7 +73,7 @@ func onMessageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 
 	// 何かしらの機能が有効なチャンネルで使えるコマンド
 	if processed, err := actionSetting(s, m, channel); err != nil {
-		postSlackWarning(err)
+		slack.PostSlackWarning(err)
 		sendMessageT(channel, "error")
 		return
 	} else if processed {
@@ -84,7 +85,7 @@ func onMessageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 	user, err := db.FindOrCreateUser(authorId, userName)
 	if err != nil {
 		sendMessageT(channel, "error")
-		postSlackWarning(err)
+		slack.PostSlackWarning(err)
 		return
 	}
 	if m.Member != nil {
@@ -92,7 +93,7 @@ func onMessageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 		nickname, err := db.UpdateNickname(user.DiscordUserId, discordGuildId, m.Member.Nick)
 		if err != nil {
 			sendMessageT(channel, "error")
-			postSlackWarning(err)
+			slack.PostSlackWarning(err)
 			return
 		}
 		user.Nickname = *nickname
@@ -102,7 +103,7 @@ func onMessageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 	if channel.Recruitment {
 		if err := actionRecruitment(s, m, channel, user); err != nil {
 			sendMessageT(channel, "error")
-			postSlackWarning(err)
+			slack.PostSlackWarning(err)
 			return
 		}
 	}
@@ -114,6 +115,6 @@ func sendMessageT(c *db.Channel, key string, params ...interface{}) {
 
 func sendMessage(channelID string, msg string) {
 	if _, err := discordSession.ChannelMessageSend(channelID, msg); err != nil {
-		postSlackWarning(fmt.Sprintf("Error sending message: %v", err))
+		slack.PostSlackWarning(fmt.Sprintf("Error sending message: %v", err))
 	}
 }

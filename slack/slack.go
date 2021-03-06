@@ -1,4 +1,4 @@
-package app
+package slack
 
 import (
 	"fmt"
@@ -7,7 +7,7 @@ import (
 	"log"
 )
 
-func postSlackWarning(msg interface{}) {
+func PostSlackWarning(msg interface{}) {
 	log.Printf("warning: %+v\n", msg)
 	if env.SlackToken == "" {
 		return
@@ -17,7 +17,7 @@ func postSlackWarning(msg interface{}) {
 	postSlack(client, channel, msg)
 }
 
-func postSlackAlert(msg interface{}) {
+func PostSlackAlert(msg interface{}) {
 	log.Printf("alert: %+v\n", msg)
 	if env.SlackToken == "" {
 		return
