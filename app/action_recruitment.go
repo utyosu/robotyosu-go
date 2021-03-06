@@ -249,9 +249,9 @@ func viewActiveRecruitments(c *db.Channel) {
 }
 
 func recruitmentMentions(r *db.Recruitment) string {
-	var s string
-	for _, p := range r.Participants {
-		s += fmt.Sprintf("<@%v>", p.User.DiscordUserId)
+	var s = make([]string, len(r.Participants))
+	for i, p := range r.Participants {
+		s[i] = fmt.Sprintf("<@%v>", p.User.DiscordUserId)
 	}
-	return s
+	return strings.Join(s, " ")
 }
