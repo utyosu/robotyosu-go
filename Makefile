@@ -28,24 +28,24 @@ stop-production:
 	ssh production "supervisorctl stop robotyosu"
 
 reset-db-local:
-	sudo mysql -u ${DATABASE_USER_LOCAL} -e " \
-		DROP DATABASE IF EXISTS ${DATABASE_NAME_LOCAL}; \
-		CREATE DATABASE ${DATABASE_NAME_LOCAL}; \
+	sudo mysql -u ${RBC_DATABASE_USER_LOCAL} -e " \
+		DROP DATABASE IF EXISTS ${RBC_DATABASE_NAME_LOCAL}; \
+		CREATE DATABASE ${RBC_DATABASE_NAME_LOCAL}; \
 	"
 	@make migrate-db-up-local
-	if [ -e "test.sql" ]; then sudo mysql -u ${DATABASE_USER_LOCAL} -h ${DATABASE_HOST_LOCAL} -P ${DATABASE_PORT_LOCAL} ${DATABASE_NAME_LOCAL} < test.sql; fi
+	if [ -e "test.sql" ]; then sudo mysql -u ${RBC_DATABASE_USER_LOCAL} -h ${RBC_DATABASE_HOST_LOCAL} -P ${RBC_DATABASE_PORT_LOCAL} ${RBC_DATABASE_NAME_LOCAL} < test.sql; fi
 
 migrate-db-up-local:
-	migrate -path db/migrations -database "mysql://${DATABASE_USER_LOCAL}:@tcp(${DATABASE_HOST_LOCAL}:${DATABASE_PORT_LOCAL})/${DATABASE_NAME_LOCAL}" up
-	mysqldump -u ${DATABASE_USER_LOCAL} -h ${DATABASE_HOST_LOCAL} -P ${DATABASE_PORT_LOCAL} ${DATABASE_NAME_LOCAL} -d --skip-comments > db/schema.sql
+	migrate -path db/migrations -database "mysql://${RBC_DATABASE_USER_LOCAL}:@tcp(${RBC_DATABASE_HOST_LOCAL}:${RBC_DATABASE_PORT_LOCAL})/${RBC_DATABASE_NAME_LOCAL}" up
+	mysqldump -u ${RBC_DATABASE_USER_LOCAL} -h ${RBC_DATABASE_HOST_LOCAL} -P ${RBC_DATABASE_PORT_LOCAL} ${RBC_DATABASE_NAME_LOCAL} -d --skip-comments --no-tablespaces > db/schema.sql
 
 migrate-db-down-local:
-	migrate -path db/migrations -database "mysql://${DATABASE_USER_LOCAL}:@tcp(${DATABASE_HOST_LOCAL}:${DATABASE_PORT_LOCAL})/${DATABASE_NAME_LOCAL}" down 1
-	mysqldump -u ${DATABASE_USER_LOCAL} -h ${DATABASE_HOST_LOCAL} -P ${DATABASE_PORT_LOCAL} ${DATABASE_NAME_LOCAL} -d --skip-comments > db/schema.sql
+	migrate -path db/migrations -database "mysql://${RBC_DATABASE_USER_LOCAL}:@tcp(${RBC_DATABASE_HOST_LOCAL}:${RBC_DATABASE_PORT_LOCAL})/${RBC_DATABASE_NAME_LOCAL}" down 1
+	mysqldump -u ${RBC_DATABASE_USER_LOCAL} -h ${RBC_DATABASE_HOST_LOCAL} -P ${RBC_DATABASE_PORT_LOCAL} ${RBC_DATABASE_NAME_LOCAL} -d --skip-comments --no-tablespaces > db/schema.sql
 
 migrate-db-production:
 	@echo -n "Are you sure? [y/N] " && read ans && [ $${ans:-N} = y ]
-	migrate -path db/migrations -database "mysql://${DATABASE_USER_PRODUCTION}:${DATABASE_PASSWORD_PRODUCTION}@tcp(${DATABASE_HOST_PRODUCTION}:${DATABASE_PORT_PRODUCTION})/${DATABASE_NAME_PRODUCTION}" up
+	migrate -path db/migrations -database "mysql://${RBC_DATABASE_USER_PRODUCTION}:${RBC_DATABASE_PASSWORD_PRODUCTION}@tcp(${RBC_DATABASE_HOST_PRODUCTION}:${RBC_DATABASE_PORT_PRODUCTION})/${RBC_DATABASE_NAME_PRODUCTION}" up
 
 provisioning-production:
 	scp -r supervisor/ production:/tmp/
