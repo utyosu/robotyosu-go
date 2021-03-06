@@ -7,14 +7,14 @@ import (
 
 type Participant struct {
 	gorm.Model
-	UserId        uint
+	DiscordUserId int64
 	RecruitmentId uint
-	User          User `gorm:"foreignkey:UserId"`
+	User          User `gorm:"foreignkey:DiscordUserId;references:discord_user_id"`
 }
 
 func InsertParticipant(user *User, recruitment *Recruitment) error {
 	err := dbs.Create(&Participant{
-		UserId:        user.ID,
+		DiscordUserId: user.DiscordUserId,
 		RecruitmentId: recruitment.ID,
 	}).Error
 	return errors.WithStack(err)

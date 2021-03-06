@@ -8,14 +8,14 @@ import (
 
 type Nickname struct {
 	gorm.Model
-	UserId         uint
+	DiscordUserId  int64
 	DiscordGuildId int64
 	Name           string
 }
 
-func FindNickname(userId uint, guildId int64) (*Nickname, error) {
+func FindNickname(discordUserId, discordGuildId int64) (*Nickname, error) {
 	nickname := Nickname{}
-	if err := dbs.Take(&nickname, "user_id=? AND discord_guild_id=?", userId, guildId).Error; err != nil {
+	if err := dbs.Take(&nickname, "discord_user_id=? AND discord_guild_id=?", discordUserId, discordGuildId).Error; err != nil {
 		if basic_errors.Is(err, gorm.ErrRecordNotFound) {
 			return &nickname, nil
 		}
@@ -24,14 +24,14 @@ func FindNickname(userId uint, guildId int64) (*Nickname, error) {
 	return &nickname, nil
 }
 
-func UpdateNickname(userId uint, guildId int64, name string) (*Nickname, error) {
-	nickname, err := FindNickname(userId, guildId)
+func UpdateNickname(discordUserId, discordGuildId int64, name string) (*Nickname, error) {
+	nickname, err := FindNickname(discordUserId, discordGuildId)
 	if err != nil {
 		return nil, err
 	}
 	if nickname.ID == 0 || nickname.Name != name {
-		nickname.UserId = userId
-		nickname.DiscordGuildId = guildId
+		nickname.DiscordUserId = discordUserId
+		nickname.DiscordGuildId = discordGuildId
 		nickname.Name = name
 		if err := dbs.Save(nickname).Error; err != nil {
 			return nil, errors.WithStack(err)

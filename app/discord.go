@@ -88,8 +88,8 @@ func onMessageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 		return
 	}
 	if m.Member != nil {
-		guildId, _ := strconv.ParseInt(m.GuildID, 10, 64)
-		nickname, err := db.UpdateNickname(user.ID, guildId, m.Member.Nick)
+		discordGuildId, _ := strconv.ParseInt(m.GuildID, 10, 64)
+		nickname, err := db.UpdateNickname(user.DiscordUserId, discordGuildId, m.Member.Nick)
 		if err != nil {
 			sendMessageT(channel, "error")
 			postSlackWarning(err)

@@ -14,25 +14,25 @@ const (
 
 type Recruitment struct {
 	gorm.Model
-	ChannelId    uint
-	Label        uint
-	Title        string
-	Capacity     uint
-	Active       bool
-	Notified     bool
-	TweetId      int64
-	ReserveAt    *time.Time
-	ExpireAt     *time.Time
-	Participants []Participant `gorm:"foreignkey:RecruitmentId"`
+	DiscordChannelId int64
+	Label            uint
+	Title            string
+	Capacity         uint
+	Active           bool
+	Notified         bool
+	TweetId          int64
+	ReserveAt        *time.Time
+	ExpireAt         *time.Time
+	Participants     []Participant `gorm:"foreignkey:RecruitmentId"`
 }
 
 // 指定ラベルの募集を取得する
 // ユーザー名、ニックネームは取得しない
-func FetchActiveRecruitmentWithLabel(channelId uint, label int) (*Recruitment, error) {
+func FetchActiveRecruitmentWithLabel(channel *Channel, label int) (*Recruitment, error) {
 	recruitment := &Recruitment{}
 	err := dbs.
 		Preload("Participants").
-		Take(recruitment, "channel_id=? AND active=? AND label=?", channelId, true, label).
+		Take(recruitment, "discord_channel_id=? AND active=? AND label=?", channel.DiscordChannelId, true, label).
 		Error
 	if basic_errors.Is(err, gorm.ErrRecordNotFound) {
 		return recruitment, nil
@@ -49,7 +49,7 @@ func FetchActiveRecruitments(channel *Channel) ([]*Recruitment, error) {
 		Preload("Participants.User").
 		Preload("Participants").
 		Order("label ASC").
-		Find(&recruitments, "channel_id=? AND active=?", channel.ID, true).
+		Find(&recruitments, "discord_channel_id=? AND active=?", channel.DiscordChannelId, true).
 		Error
 	return recruitments, errors.WithStack(err)
 }
@@ -58,7 +58,7 @@ func ResurrectClosedRecruitment(channel *Channel) (*Recruitment, error) {
 	recruitment := &Recruitment{}
 	err := dbs.
 		Order("updated_at DESC").
-		First(recruitment, "channel_id=? AND active=? AND expire_at>?", channel.ID, false, time.Now()).
+		First(recruitment, "discord_channel_id=? AND active=? AND expire_at>?", channel.DiscordChannelId, false, time.Now()).
 		Error
 	if err != nil {
 		return nil, errors.WithStack(err)
@@ -102,14 +102,14 @@ func InsertRecruitment(user *User, channel *Channel, title string, capacity uint
 	}
 
 	recruitment := &Recruitment{
-		ChannelId: channel.ID,
-		Label:     label,
-		Title:     title,
-		Capacity:  capacity,
-		Active:    true,
-		Notified:  false,
-		ReserveAt: reserveAt,
-		ExpireAt:  &expireAt,
+		DiscordChannelId: channel.DiscordChannelId,
+		Label:            label,
+		Title:            title,
+		Capacity:         capacity,
+		Active:           true,
+		Notified:         false,
+		ReserveAt:        reserveAt,
+		ExpireAt:         &expireAt,
 	}
 	err = dbs.Create(recruitment).Error
 	if err != nil {
@@ -131,7 +131,7 @@ func (r *Recruitment) CloseRecruitment() error {
 func (r *Recruitment) JoinParticipant(user *User, channel *Channel) (bool, error) {
 	// 既に参加していれば失敗にする
 	for _, participant := range r.Participants {
-		if participant.UserId == user.ID {
+		if participant.DiscordUserId == user.DiscordUserId {
 			return false, nil
 		}
 	}
@@ -145,7 +145,7 @@ func (r *Recruitment) JoinParticipant(user *User, channel *Channel) (bool, error
 
 func (r *Recruitment) LeaveParticipant(user *User, channel *Channel) (bool, error) {
 	for _, p := range r.Participants {
-		if p.RecruitmentId == r.ID && p.UserId == user.ID {
+		if p.RecruitmentId == r.ID && p.DiscordUserId == user.DiscordUserId {
 			if err := p.Delete(); err != nil {
 				return false, err
 			}
@@ -262,7 +262,7 @@ func fetchEmptyLabel(channel *Channel) (uint, error) {
 	recruitments := []*Recruitment{}
 	err := dbs.
 		Select("label").
-		Find(&recruitments, "channel_id=? AND active=?", channel.ID, true).
+		Find(&recruitments, "discord_channel_id=? AND active=?", channel.DiscordChannelId, true).
 		Error
 	if err != nil {
 		return 0, errors.WithStack(err)
