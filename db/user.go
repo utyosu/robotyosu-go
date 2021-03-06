@@ -10,7 +10,7 @@ type User struct {
 	gorm.Model
 	DiscordUserId int64
 	Name          string
-	Nickname      Nickname `gorm:"foreignkey:UserId"`
+	Nickname      Nickname `gorm:"foreignkey:DiscordUserId;references:discord_user_id"`
 }
 
 func FindOrCreateUser(discordUserId int64, name string) (*User, error) {
