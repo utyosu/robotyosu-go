@@ -51,17 +51,6 @@ migrate-db-production:
 	@echo -n "Are you sure? [y/N] " && read ans && [ $${ans:-N} = y ]
 	migrate -path db/migrations -database "mysql://${RBC_DATABASE_USER_PRODUCTION}:${RBC_DATABASE_PASSWORD_PRODUCTION}@tcp(${RBC_DATABASE_HOST_PRODUCTION}:${RBC_DATABASE_PORT_PRODUCTION})/${RBC_DATABASE_NAME_PRODUCTION}" up
 
-provisioning-production:
-	scp -r supervisor/ production:/tmp/
-	ssh production " \
-		sudo yum install python3 -y && \
-		sudo pip3 install supervisor && \
-		sudo rm -rf /etc/supervisor && \
-		sudo mv /tmp/supervisor /etc && \
-		killall supervisord | true && \
-		supervisord \
-	"
-
 backup-db-production:
 	mkdir -p db/backups
 	mysqldump -u ${RBC_DATABASE_USER_PRODUCTION} -h ${RBC_DATABASE_HOST_PRODUCTION} -P ${RBC_DATABASE_PORT_PRODUCTION} ${RBC_DATABASE_NAME_PRODUCTION} --skip-comments --no-tablespaces --set-gtid-purged=OFF --default-character-set=binary -p > ${BACKUP_DIR}/${BACKUP_FILE_PREFIX}$(TIMESTAMP).sql
