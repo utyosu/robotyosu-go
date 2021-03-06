@@ -28,10 +28,12 @@ func postSlackAlert(msg interface{}) {
 }
 
 func postSlack(client *slack.Client, channel string, msg interface{}) {
-	content := fmt.Sprintf("robotyosu-go error notification\n```\n%+v\n```", msg)
-	_, _, err := client.PostMessage(
-		channel,
-		slack.MsgOptionText(content, true),
+	_, err := client.UploadFile(
+		slack.FileUploadParameters{
+			Title:    "robotyosu-go error notification",
+			Content:  fmt.Sprintf("%+v", msg),
+			Channels: []string{channel},
+		},
 	)
 	if err != nil {
 		log.Println(err)
