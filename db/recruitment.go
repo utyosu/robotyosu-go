@@ -131,7 +131,7 @@ func (r *Recruitment) CloseRecruitment() error {
 func (r *Recruitment) JoinParticipant(user *User, channel *Channel) (bool, error) {
 	// 既に参加していれば失敗にする
 	for _, participant := range r.Participants {
-		if participant.UserId == user.ID {
+		if participant.DiscordUserId == user.DiscordUserId {
 			return false, nil
 		}
 	}
@@ -145,7 +145,7 @@ func (r *Recruitment) JoinParticipant(user *User, channel *Channel) (bool, error
 
 func (r *Recruitment) LeaveParticipant(user *User, channel *Channel) (bool, error) {
 	for _, p := range r.Participants {
-		if p.RecruitmentId == r.ID && p.UserId == user.ID {
+		if p.RecruitmentId == r.ID && p.DiscordUserId == user.DiscordUserId {
 			if err := p.Delete(); err != nil {
 				return false, err
 			}
