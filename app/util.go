@@ -3,6 +3,7 @@ package app
 import (
 	"fmt"
 	"github.com/bwmarrin/discordgo"
+	"github.com/utyosu/robotyosu-go/slack"
 	"regexp"
 	"strconv"
 	"strings"
@@ -47,7 +48,7 @@ func doFuncSchedule(f func(), interval time.Duration) *time.Ticker {
 
 func NotifySlackWhenPanic(info string) {
 	if err := recover(); err != nil {
-		postSlackAlert(fmt.Sprintf("panic: %v\ninfo: %v", err, info))
+		slack.PostSlackAlert(fmt.Sprintf("panic: %v\ninfo: %v", err, info))
 	}
 }
 

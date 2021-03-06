@@ -6,6 +6,7 @@ import (
 	"github.com/utyosu/robotyosu-go/db"
 	"github.com/utyosu/robotyosu-go/i18n"
 	"github.com/utyosu/robotyosu-go/msg"
+	"github.com/utyosu/robotyosu-go/slack"
 	"golang.org/x/text/width"
 	"regexp"
 	"strings"
@@ -157,20 +158,20 @@ func trimMention(s string) string {
 func closeExpiredRecruitment() {
 	channels, err := db.FetchAllChannels()
 	if err != nil {
-		postSlackWarning(err)
+		slack.PostSlackWarning(err)
 		return
 	}
 	for _, channel := range channels {
 		closed := false
 		recruitments, err := db.FetchActiveRecruitments(channel)
 		if err != nil {
-			postSlackWarning(err)
+			slack.PostSlackWarning(err)
 			return
 		}
 		for _, recruitment := range recruitments {
 			if recruitment.IsPastExpireAt() {
 				if err := recruitment.CloseRecruitment(); err != nil {
-					postSlackWarning(err)
+					slack.PostSlackWarning(err)
 					continue
 				}
 				tweet(channel, recruitment, TwitterTypeClose)
@@ -188,19 +189,19 @@ func notifyReservedRecruitmentOnTime() {
 	now := time.Now()
 	channels, err := db.FetchAllChannels()
 	if err != nil {
-		postSlackWarning(err)
+		slack.PostSlackWarning(err)
 		return
 	}
 	for _, channel := range channels {
 		recruitments, err := db.FetchActiveRecruitments(channel)
 		if err != nil {
-			postSlackWarning(err)
+			slack.PostSlackWarning(err)
 			return
 		}
 		existNotified := false
 		for _, recruitment := range recruitments {
 			if notified, closed, err := recruitment.ProcessOnTime(now); err != nil {
-				postSlackWarning(err)
+				slack.PostSlackWarning(err)
 				return
 			} else if notified {
 				if closed {
@@ -221,7 +222,7 @@ func viewActiveRecruitments(c *db.Channel) {
 	recruitments, err := db.FetchActiveRecruitments(c)
 	if err != nil {
 		sendMessageT(c, "error")
-		postSlackWarning(err)
+		slack.PostSlackWarning(err)
 		return
 	}
 	m := "```\n"
