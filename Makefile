@@ -1,3 +1,7 @@
+TIMESTAMP := $(shell TZ='Asia/Tokyo' date '+%Y%m%d%H%M')
+BACKUP_DIR := db/backups
+BACKUP_FILE_PREFIX := dump_rbc_production_
+
 fmt:
 	go fmt ./...
 
@@ -57,3 +61,8 @@ provisioning-production:
 		killall supervisord | true && \
 		supervisord \
 	"
+
+backup-db-production:
+	mkdir -p db/backups
+	mysqldump -u ${RBC_DATABASE_USER_PRODUCTION} -h ${RBC_DATABASE_HOST_PRODUCTION} -P ${RBC_DATABASE_PORT_PRODUCTION} ${RBC_DATABASE_NAME_PRODUCTION} --skip-comments --no-tablespaces --set-gtid-purged=OFF --default-character-set=binary -p > ${BACKUP_DIR}/${BACKUP_FILE_PREFIX}$(TIMESTAMP).sql
+	@echo "Create dump to ${BACKUP_DIR}/${BACKUP_FILE_PREFIX}$(TIMESTAMP).sql"

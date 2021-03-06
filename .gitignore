@@ -4,3 +4,4 @@ env/env_production.go
 .vscode/
 /test.sql
 db/migrations/tmp
+db/backups
