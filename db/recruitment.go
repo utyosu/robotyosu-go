@@ -15,9 +15,9 @@ const (
 type Recruitment struct {
 	gorm.Model
 	DiscordChannelId int64
-	Label            uint
+	Label            uint32
 	Title            string
-	Capacity         uint
+	Capacity         uint32
 	Active           bool
 	Notified         bool
 	TweetId          int64
@@ -77,7 +77,7 @@ func ResurrectClosedRecruitment(channel *Channel) (*Recruitment, error) {
 	return nil, nil
 }
 
-func InsertRecruitment(user *User, channel *Channel, title string, capacity uint, reserveAt *time.Time) (*Recruitment, string, error) {
+func InsertRecruitment(user *User, channel *Channel, title string, capacity uint32, reserveAt *time.Time) (*Recruitment, string, error) {
 	if len([]rune(title)) > maxTitleRunes {
 		return nil, i18n.T(channel.Language, "too_long_title"), nil
 	} else if capacity < 2 {
@@ -145,7 +145,7 @@ func (r *Recruitment) JoinParticipant(user *User, channel *Channel) (bool, error
 
 func (r *Recruitment) LeaveParticipant(user *User, channel *Channel) (bool, error) {
 	for _, p := range r.Participants {
-		if p.RecruitmentId == r.ID && p.DiscordUserId == user.DiscordUserId {
+		if p.RecruitmentId == uint32(r.ID) && p.DiscordUserId == user.DiscordUserId {
 			if err := p.Delete(); err != nil {
 				return false, err
 			}
@@ -258,7 +258,7 @@ func (r *Recruitment) ExpireAtTime(timezone *time.Location) string {
 	return r.ExpireAt.In(timezone).Format("15:04")
 }
 
-func fetchEmptyLabel(channel *Channel) (uint, error) {
+func fetchEmptyLabel(channel *Channel) (uint32, error) {
 	recruitments := []*Recruitment{}
 	err := dbs.
 		Select("label").
@@ -267,7 +267,7 @@ func fetchEmptyLabel(channel *Channel) (uint, error) {
 	if err != nil {
 		return 0, errors.WithStack(err)
 	}
-	maxLabel := uint(1)
+	maxLabel := uint32(1)
 	for _, recruitment := range recruitments {
 		if maxLabel <= recruitment.Label {
 			maxLabel = recruitment.Label + 1

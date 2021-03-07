@@ -20,7 +20,7 @@ type Channel struct {
 	Recruitment      bool
 	Timezone         string
 	Language         string
-	TwitterConfigId  uint
+	TwitterConfigId  uint32
 }
 
 func FindChannel(discordChannelId int64) (*Channel, error) {
