@@ -34,7 +34,7 @@ func actionRecruitment(s *discordgo.Session, m *discordgo.MessageCreate, channel
 		timezone := channel.LoadLocation()
 		now := time.Now().In(timezone)
 		reserveAt := msg.ParseTime(formattedContent, now)
-		capacity := uint(getMatchRegexpNumber(formattedContent, regexpOpenRecruitment) + 1)
+		capacity := uint32(getMatchRegexpNumber(formattedContent, regexpOpenRecruitment) + 1)
 		recruitment, msg, err := db.InsertRecruitment(user, channel, rawContent, capacity, reserveAt)
 		if err != nil {
 			return err
