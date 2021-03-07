@@ -25,7 +25,7 @@ func actionSetting(s *discordgo.Session, m *discordgo.MessageCreate, channel *db
 		sendMessage(
 			m.ChannelID,
 			fmt.Sprintf(
-				"Current timezone is %v\nAvailable timezone example: America/New_York, Asia/Singapore, Asia/Tokyo, ...\n",
+				"Current timezone is %v\nAvailable timezones: UTC, EST, GMT, Asia/Tokyo, etc.\n",
 				channel.Timezone,
 			),
 		)
