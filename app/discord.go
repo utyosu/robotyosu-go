@@ -23,12 +23,12 @@ func init() {
 	slackAlert = &slack.Config{
 		Channel: env.SlackChannelAlert,
 		Token:   env.SlackToken,
-		Title:   env.SlackTitle,
+		Title:   env.SlackTitleAlert,
 	}
 	slackWarning = &slack.Config{
 		Channel: env.SlackChannelWarning,
 		Token:   env.SlackToken,
-		Title:   env.SlackTitle,
+		Title:   env.SlackTitleWarning,
 	}
 }
 
