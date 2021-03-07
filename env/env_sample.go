@@ -23,6 +23,7 @@ const (
 	SlackToken          = "TOKEN"
 	SlackChannelWarning = "#channel-name-warning"
 	SlackChannelAlert   = "#channel-name-alert"
-	SlackTitle          = "error notification"
+	SlackTitleWarning   = "robotyosu-go warning notification"
+	SlackTitleAlert     = "robotyosu-go alert notification"
 	ScheduledDuration   = 60
 )

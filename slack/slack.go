@@ -2,52 +2,47 @@ package slack
 
 import (
 	"fmt"
+	"github.com/k0kubun/pp/v3"
 	"github.com/slack-go/slack"
 	"log"
 )
 
-var (
-	config *SlackConfig
-)
-
-type SlackConfig struct {
-	WarningChannel string
-	AlertChannel   string
-	Token          string
-	Title          string
+type Config struct {
+	Channel string
+	Token   string
+	Title   string
 }
 
-func Init(c *SlackConfig) {
-	config = c
+func (c *Config) Post(p ...interface{}) {
+	log.Printf("[%v]\n%v", c.Title, printString(true, p...))
+	client := slack.New(c.Token)
+	c.postSlack(client, p...)
 }
 
-func PostSlackWarning(msg interface{}) {
-	log.Printf("warning: %+v\n", msg)
-	if config == nil {
-		return
-	}
-	client := slack.New(config.Token)
-	postSlack(client, config.WarningChannel, msg)
-}
-
-func PostSlackAlert(msg interface{}) {
-	log.Printf("alert: %+v\n", msg)
-	if config == nil {
-		return
-	}
-	client := slack.New(config.Token)
-	postSlack(client, config.AlertChannel, msg)
-}
-
-func postSlack(client *slack.Client, channel string, msg interface{}) {
+func (c *Config) postSlack(client *slack.Client, p ...interface{}) {
 	_, err := client.UploadFile(
 		slack.FileUploadParameters{
-			Title:    config.Title,
-			Content:  fmt.Sprintf("%+v", msg),
-			Channels: []string{channel},
+			Title:    c.Title,
+			Content:  printString(false, p...),
+			Channels: []string{c.Channel},
 		},
 	)
 	if err != nil {
 		log.Println(err)
 	}
+}
+
+func printString(enableColor bool, p ...interface{}) string {
+	lpp := pp.New()
+	lpp.SetColoringEnabled(enableColor)
+	var ret string
+	for _, v := range p {
+		if _, ok := v.(error); ok {
+			// errorはppで展開すると読めないのでfmtで表示する
+			ret += fmt.Sprintf("%+v\n", v)
+		} else {
+			ret += lpp.Sprintf("%v\n", v)
+		}
+	}
+	return ret
 }
