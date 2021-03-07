@@ -1,6 +1,7 @@
 package app
 
 import (
+	"fmt"
 	"github.com/bwmarrin/discordgo"
 	"github.com/utyosu/robotyosu-go/db"
 	"github.com/utyosu/robotyosu-go/i18n"
@@ -53,6 +54,15 @@ func actionAllChannel(s *discordgo.Session, m *discordgo.MessageCreate) (bool, e
 			language = channel.Language
 		}
 		sendMessage(m.ChannelID, i18n.HelpBasicCommands(language))
+		return true, nil
+
+	// バージョンの表示
+	case m.Content == (commandPrefix + " version"):
+		sendMessage(m.ChannelID, fmt.Sprintf(
+			"CommitHash: %v\nBuildDatetime: %v",
+			commitHash,
+			buildDatetime,
+		))
 		return true, nil
 	}
 	return false, nil

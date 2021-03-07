@@ -18,6 +18,8 @@ var (
 	stopBot        = make(chan bool)
 	slackAlert     *slack.Config
 	slackWarning   *slack.Config
+	commitHash     string
+	buildDatetime  string
 )
 
 func init() {
