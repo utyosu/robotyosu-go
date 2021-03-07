@@ -115,6 +115,6 @@ func sendMessageT(c *db.Channel, key string, params ...interface{}) {
 
 func sendMessage(channelID string, msg string) {
 	if _, err := discordSession.ChannelMessageSend(channelID, msg); err != nil {
-		slack.PostSlackWarning(fmt.Sprintf("Error sending message: %v", err))
+		slack.PostSlackWarning(fmt.Sprintf("Error sending message: %v\nMsg: %v\nChannelID: %v", err, msg, channelID))
 	}
 }
