@@ -1,7 +1,6 @@
 package app
 
 import (
-	"fmt"
 	"github.com/dghubble/go-twitter/twitter"
 	"github.com/dghubble/oauth1"
 	"github.com/pkg/errors"
@@ -39,21 +38,17 @@ func tweet(c *db.Channel, r *db.Recruitment, t TwitterType) {
 		return
 	} else if twitterConfig.ID == 0 {
 		slackWarning.Post(
-			fmt.Errorf(
-				"TwitterConfig が見つかりません。\nChannelId: %v",
-				c.ID,
-			),
+			errors.New("TwitterConfig が見つかりません。"),
+			c,
 		)
 		return
 	}
 
 	if r.TweetId == 0 && t != TwitterTypeOpen {
-		slack.PostSlackWarning(
-			fmt.Errorf(
-				"募集開始ではないのにリプライ用のTweetIdが見つかりません。\nChannelId: %v\nRecruitmentId: %v",
-				c.ID,
-				r.ID,
-			),
+		slackWarning.Post(
+			errors.New("募集開始ではないのにリプライ用のTweetIdが見つかりません。"),
+			c,
+			r,
 		)
 		return
 	}

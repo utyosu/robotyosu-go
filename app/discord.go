@@ -3,6 +3,7 @@ package app
 import (
 	"fmt"
 	"github.com/bwmarrin/discordgo"
+	"github.com/pkg/errors"
 	"github.com/utyosu/robotyosu-go/db"
 	"github.com/utyosu/robotyosu-go/env"
 	"github.com/utyosu/robotyosu-go/i18n"
@@ -130,6 +131,10 @@ func sendMessageT(c *db.Channel, key string, params ...interface{}) {
 
 func sendMessage(channelID string, msg string) {
 	if _, err := discordSession.ChannelMessageSend(channelID, msg); err != nil {
-		slackWarning.Post(fmt.Sprintf("Error sending message: %v\nMsg: %v\nChannelID: %v", err, msg, channelID))
+		slackWarning.Post(
+			errors.New("Error sending message"),
+			msg,
+			channelID,
+		)
 	}
 }
