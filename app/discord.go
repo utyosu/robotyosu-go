@@ -38,7 +38,7 @@ func Start() {
 }
 
 func onMessageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
-	defer NotifySlackWhenPanic(messageInformation(s, m))
+	defer NotifySlackWhenPanic(s, m)
 
 	// 自分のメッセージは処理しない
 	if m.Author.ID == env.DiscordBotClientId {
