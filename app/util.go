@@ -1,7 +1,6 @@
 package app
 
 import (
-	"github.com/utyosu/robotyosu-go/slack"
 	"regexp"
 	"strconv"
 	"strings"
@@ -46,6 +45,6 @@ func doFuncSchedule(f func(), interval time.Duration) *time.Ticker {
 
 func NotifySlackWhenPanic(p ...interface{}) {
 	if err := recover(); err != nil {
-		slack.PostSlackAlert(p...)
+		slackAlert.Post(p...)
 	}
 }

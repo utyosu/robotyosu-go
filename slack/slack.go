@@ -7,45 +7,24 @@ import (
 	"log"
 )
 
-var (
-	config *SlackConfig
-)
-
-type SlackConfig struct {
-	WarningChannel string
-	AlertChannel   string
-	Token          string
-	Title          string
+type Config struct {
+	Channel string
+	Token   string
+	Title   string
 }
 
-func Init(c *SlackConfig) {
-	config = c
+func (c *Config) Post(p ...interface{}) {
+	log.Printf("[%v]\n%v", c.Title, printString(true, p...))
+	client := slack.New(c.Token)
+	c.postSlack(client, p...)
 }
 
-func PostSlackWarning(p ...interface{}) {
-	log.Printf("[warning]\n%v", printString(true, p))
-	if config == nil {
-		return
-	}
-	client := slack.New(config.Token)
-	postSlack(client, config.WarningChannel, p...)
-}
-
-func PostSlackAlert(p ...interface{}) {
-	log.Printf("[warning]\n%+v", printString(true, p))
-	if config == nil {
-		return
-	}
-	client := slack.New(config.Token)
-	postSlack(client, config.AlertChannel, p...)
-}
-
-func postSlack(client *slack.Client, channel string, p ...interface{}) {
+func (c *Config) postSlack(client *slack.Client, p ...interface{}) {
 	_, err := client.UploadFile(
 		slack.FileUploadParameters{
-			Title:    config.Title,
+			Title:    c.Title,
 			Content:  printString(false, p...),
-			Channels: []string{channel},
+			Channels: []string{c.Channel},
 		},
 	)
 	if err != nil {

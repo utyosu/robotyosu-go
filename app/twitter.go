@@ -7,7 +7,6 @@ import (
 	"github.com/pkg/errors"
 	"github.com/utyosu/robotyosu-go/db"
 	"github.com/utyosu/robotyosu-go/i18n"
-	"github.com/utyosu/robotyosu-go/slack"
 	"regexp"
 	"strings"
 )
@@ -36,10 +35,10 @@ func tweet(c *db.Channel, r *db.Recruitment, t TwitterType) {
 	twitterConfig, err := db.FindTwitterConfig(c.TwitterConfigId)
 	if err != nil {
 		// Tweetに失敗するだけならユーザーに通知しない
-		slack.PostSlackWarning(err)
+		slackWarning.Post(err)
 		return
 	} else if twitterConfig.ID == 0 {
-		slack.PostSlackWarning(
+		slackWarning.Post(
 			fmt.Errorf(
 				"TwitterConfig が見つかりません。\nChannelId: %v",
 				c.ID,
@@ -71,12 +70,12 @@ func tweet(c *db.Channel, r *db.Recruitment, t TwitterType) {
 	tweet, _, err := twitterClient.Statuses.Update(toTwitterSafe(msg), status)
 	if err != nil {
 		sendMessageT(c, "twitter_error")
-		slack.PostSlackWarning(errors.WithStack(err))
+		slackWarning.Post(errors.WithStack(err))
 		return
 	}
 	if err := r.UpdateTweetId(tweet.ID); err != nil {
 		// DB更新は失敗してもツイートが成功しているので、ユーザーにエラーは出力しない
-		slack.PostSlackWarning(errors.WithStack(err))
+		slackWarning.Post(errors.WithStack(err))
 	}
 	return
 }

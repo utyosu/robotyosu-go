@@ -15,7 +15,22 @@ import (
 var (
 	discordSession *discordgo.Session
 	stopBot        = make(chan bool)
+	slackAlert     *slack.Config
+	slackWarning   *slack.Config
 )
+
+func init() {
+	slackAlert = &slack.Config{
+		Channel: env.SlackChannelAlert,
+		Token:   env.SlackToken,
+		Title:   env.SlackTitle,
+	}
+	slackWarning = &slack.Config{
+		Channel: env.SlackChannelWarning,
+		Token:   env.SlackToken,
+		Title:   env.SlackTitle,
+	}
+}
 
 func Start() {
 	var err error
@@ -54,7 +69,7 @@ func onMessageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 	// 全チャンネルで使えるコマンド
 	if processed, err := actionAllChannel(s, m); err != nil {
 		sendMessage(m.ChannelID, i18n.T(i18n.DefaultLanguage, "error"))
-		slack.PostSlackWarning(err)
+		slackWarning.Post(err)
 		return
 	} else if processed {
 		return
@@ -63,7 +78,7 @@ func onMessageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 	discordChannelId, _ := strconv.ParseInt(m.ChannelID, 10, 64)
 	channel, err := db.FindChannel(discordChannelId)
 	if err != nil {
-		slack.PostSlackWarning(err)
+		slackWarning.Post(err)
 		return
 	}
 
@@ -73,7 +88,7 @@ func onMessageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 
 	// 何かしらの機能が有効なチャンネルで使えるコマンド
 	if processed, err := actionSetting(s, m, channel); err != nil {
-		slack.PostSlackWarning(err)
+		slackWarning.Post(err)
 		sendMessageT(channel, "error")
 		return
 	} else if processed {
@@ -85,7 +100,7 @@ func onMessageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 	user, err := db.FindOrCreateUser(authorId, userName)
 	if err != nil {
 		sendMessageT(channel, "error")
-		slack.PostSlackWarning(err)
+		slackWarning.Post(err)
 		return
 	}
 	if m.Member != nil {
@@ -93,7 +108,7 @@ func onMessageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 		nickname, err := db.UpdateNickname(user.DiscordUserId, discordGuildId, m.Member.Nick)
 		if err != nil {
 			sendMessageT(channel, "error")
-			slack.PostSlackWarning(err)
+			slackWarning.Post(err)
 			return
 		}
 		user.Nickname = *nickname
@@ -103,7 +118,7 @@ func onMessageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 	if channel.Recruitment {
 		if err := actionRecruitment(s, m, channel, user); err != nil {
 			sendMessageT(channel, "error")
-			slack.PostSlackWarning(err)
+			slackWarning.Post(err)
 			return
 		}
 	}
@@ -115,6 +130,6 @@ func sendMessageT(c *db.Channel, key string, params ...interface{}) {
 
 func sendMessage(channelID string, msg string) {
 	if _, err := discordSession.ChannelMessageSend(channelID, msg); err != nil {
-		slack.PostSlackWarning(fmt.Sprintf("Error sending message: %v\nMsg: %v\nChannelID: %v", err, msg, channelID))
+		slackWarning.Post(fmt.Sprintf("Error sending message: %v\nMsg: %v\nChannelID: %v", err, msg, channelID))
 	}
 }
