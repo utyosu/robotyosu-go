@@ -10,6 +10,9 @@ import (
 
 const (
 	maxTitleRunes = 100
+
+	// この時間以内なら終了済の募集であっても同じラベルを使わない
+	ignoreLabelDuration = time.Hour * 6
 )
 
 type Recruitment struct {
@@ -260,18 +263,32 @@ func (r *Recruitment) ExpireAtTime(timezone *time.Location) string {
 
 func fetchEmptyLabel(channel *Channel) (uint32, error) {
 	recruitments := []*Recruitment{}
+
+	// 終了済の募集でもこの時間より後に作られた募集のラベルは使わない
+	ignoreTime := time.Now().Add(-ignoreLabelDuration)
+
 	err := dbs.
 		Select("label").
-		Find(&recruitments, "discord_channel_id=? AND active=?", channel.DiscordChannelId, true).
+		Find(&recruitments, "discord_channel_id = ? AND (active = ? OR created_at > ?)", channel.DiscordChannelId, true, ignoreTime).
 		Error
 	if err != nil {
 		return 0, errors.WithStack(err)
 	}
-	maxLabel := uint32(1)
+
+	var maxLabel uint32
+	existLabelSet := map[uint32]struct{}{}
 	for _, recruitment := range recruitments {
-		if maxLabel <= recruitment.Label {
-			maxLabel = recruitment.Label + 1
+		existLabelSet[recruitment.Label] = struct{}{}
+		if maxLabel < recruitment.Label {
+			maxLabel = recruitment.Label
 		}
 	}
-	return maxLabel, nil
+
+	for i := uint32(1); i < maxLabel; i++ {
+		if _, ok := existLabelSet[i]; !ok {
+			return i, nil
+		}
+	}
+
+	return maxLabel + 1, nil
 }
