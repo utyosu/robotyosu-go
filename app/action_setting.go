@@ -5,23 +5,19 @@ import (
 	"github.com/bwmarrin/discordgo"
 	"github.com/utyosu/robotyosu-go/db"
 	"github.com/utyosu/robotyosu-go/i18n"
-	"regexp"
 	"strings"
 	"time"
 )
 
-var (
-	regexpShowTimezone        = regexp.MustCompile(`\A` + commandPrefix + `\s+timezone\z`)
-	regexpSetTimezone         = regexp.MustCompile(`\A` + commandPrefix + `\s+timezone\s+([\w/]+)\z`)
-	regexpShowLanguage        = regexp.MustCompile(`\A` + commandPrefix + `\s+language\z`)
-	regexpSetLanguage         = regexp.MustCompile(`\A` + commandPrefix + `\s+language\s+([\w/]+)\z`)
-	regexpShowRecruitmentHelp = regexp.MustCompile(`使い方|ヘルプ|help`)
-)
-
 func actionSetting(s *discordgo.Session, m *discordgo.MessageCreate, channel *db.Channel) (bool, error) {
+	command, ok := toCommand(m.Content)
+	if !ok {
+		return false, nil
+	}
+
 	switch {
 	// タイムゾーンの参照
-	case regexpShowTimezone.MatchString(m.Content):
+	case command.match("timezone"):
 		sendMessage(
 			m.ChannelID,
 			fmt.Sprintf(
@@ -32,8 +28,8 @@ func actionSetting(s *discordgo.Session, m *discordgo.MessageCreate, channel *db
 		return true, nil
 
 	// タイムゾーンの変更
-	case regexpSetTimezone.MatchString(m.Content):
-		timezoneString := getMatchRegexpString(m.Content, regexpSetTimezone)
+	case command.match("timezone", "*"):
+		timezoneString := command.fetch(1)
 		_, err := time.LoadLocation(timezoneString)
 		if err != nil {
 			sendMessage(m.ChannelID, fmt.Sprintf("No such timezone: %v", timezoneString))
@@ -45,7 +41,7 @@ func actionSetting(s *discordgo.Session, m *discordgo.MessageCreate, channel *db
 		sendMessage(m.ChannelID, fmt.Sprintf("Timezone changed to %v", timezoneString))
 
 	// 言語の参照
-	case regexpShowLanguage.MatchString(m.Content):
+	case command.match("language"):
 		sendMessage(
 			m.ChannelID,
 			fmt.Sprintf(
@@ -57,8 +53,8 @@ func actionSetting(s *discordgo.Session, m *discordgo.MessageCreate, channel *db
 		return true, nil
 
 	// 言語の変更
-	case regexpSetLanguage.MatchString(m.Content):
-		languageString := getMatchRegexpString(m.Content, regexpSetLanguage)
+	case command.match("language", "*"):
+		languageString := command.fetch(1)
 		if languageString != i18n.ToLanguage(languageString) {
 			sendMessage(m.ChannelID, fmt.Sprintf("No such language: %v", languageString))
 			return true, nil
@@ -69,7 +65,7 @@ func actionSetting(s *discordgo.Session, m *discordgo.MessageCreate, channel *db
 		sendMessage(m.ChannelID, fmt.Sprintf("Language changed to %v", languageString))
 
 	// 募集機能のヘルプ
-	case regexpShowRecruitmentHelp.MatchString(m.Content):
+	case command.match("help"):
 		sendMessage(m.ChannelID, i18n.HelpRecruitmentCommands(i18n.ToLanguage(channel.Language)))
 		return true, nil
 	}

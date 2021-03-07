@@ -8,14 +8,15 @@ import (
 	"strconv"
 )
 
-const (
-	commandPrefix = ".rt"
-)
-
 func actionAllChannel(s *discordgo.Session, m *discordgo.MessageCreate) (bool, error) {
+	command, ok := toCommand(m.Content)
+	if !ok {
+		return false, nil
+	}
+
 	switch {
 	// 有効化
-	case m.Content == (commandPrefix + " enable"):
+	case command.match("enable"):
 		discordChannelId, _ := strconv.ParseInt(m.ChannelID, 10, 64)
 		discordGuildId, _ := strconv.ParseInt(m.GuildID, 10, 64)
 		channel, err := db.FindOrCreateChannel(discordChannelId, discordGuildId)
@@ -29,7 +30,7 @@ func actionAllChannel(s *discordgo.Session, m *discordgo.MessageCreate) (bool, e
 		return true, nil
 
 	// 無効化
-	case m.Content == (commandPrefix + " disable"):
+	case command.match("disable"):
 		discordChannelId, _ := strconv.ParseInt(m.ChannelID, 10, 64)
 		discordGuildId, _ := strconv.ParseInt(m.GuildID, 10, 64)
 		channel, err := db.FindOrCreateChannel(discordChannelId, discordGuildId)
@@ -43,7 +44,7 @@ func actionAllChannel(s *discordgo.Session, m *discordgo.MessageCreate) (bool, e
 		return true, nil
 
 	// コマンドヘルプの表示
-	case m.Content == (commandPrefix + " help"):
+	case command.match("help"):
 		discordChannelId, _ := strconv.ParseInt(m.ChannelID, 10, 64)
 		language := i18n.DefaultLanguage
 
@@ -57,7 +58,7 @@ func actionAllChannel(s *discordgo.Session, m *discordgo.MessageCreate) (bool, e
 		return true, nil
 
 	// バージョンの表示
-	case m.Content == (commandPrefix + " version"):
+	case command.match("version"):
 		sendMessage(m.ChannelID, fmt.Sprintf(
 			"CommitHash: %v\nBuildDatetime: %v",
 			commitHash,
