@@ -5,6 +5,7 @@ import (
 	"github.com/bwmarrin/discordgo"
 	"github.com/utyosu/robotyosu-go/db"
 	"github.com/utyosu/robotyosu-go/i18n"
+	"strconv"
 	"strings"
 	"time"
 )
@@ -63,6 +64,37 @@ func actionSetting(s *discordgo.Session, m *discordgo.MessageCreate, channel *db
 			return true, err
 		}
 		sendMessage(m.ChannelID, fmt.Sprintf("Language changed to %v", languageString))
+
+		// 募集期間制限の参照
+	case command.match("reserve_limit_time"):
+		sendMessage(
+			m.ChannelID,
+			fmt.Sprintf(
+				"Current reserve limit time is %vsec (0 is unlimited)",
+				channel.ReserveLimitTime,
+			),
+		)
+		return true, nil
+
+	// 募集期間制限の変更
+	case command.match("reserve_limit_time", "*"):
+		reserveLimitTimeString := command.fetch(1)
+		reserveLimitTime, err := strconv.ParseUint(reserveLimitTimeString, 10, 32)
+		if err != nil {
+			sendMessage(m.ChannelID, fmt.Sprintf("Invalid time: %v", reserveLimitTimeString))
+			return true, nil
+		}
+		if err := channel.UpdateChannelReserveLimitTime(uint32(reserveLimitTime)); err != nil {
+			return true, err
+		}
+		sendMessage(
+			m.ChannelID,
+			fmt.Sprintf(
+				"Reserve limit time changed to %vsec (0 is unlimited)",
+				reserveLimitTimeString,
+			),
+		)
+		return true, nil
 
 	// 募集機能のヘルプ
 	case command.match("help"):

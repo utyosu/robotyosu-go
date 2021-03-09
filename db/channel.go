@@ -20,6 +20,7 @@ type Channel struct {
 	Recruitment      bool
 	Timezone         string
 	Language         string
+	ReserveLimitTime uint32
 	TwitterConfigId  uint32
 }
 
@@ -74,6 +75,12 @@ func (c *Channel) UpdateChannelTimezone(timezone string) error {
 
 func (c *Channel) UpdateChannelLanguage(language string) error {
 	c.Language = language
+	err := dbs.Save(c).Error
+	return errors.WithStack(err)
+}
+
+func (c *Channel) UpdateChannelReserveLimitTime(reserveLimitTime uint32) error {
+	c.ReserveLimitTime = reserveLimitTime
 	err := dbs.Save(c).Error
 	return errors.WithStack(err)
 }
