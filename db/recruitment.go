@@ -89,8 +89,14 @@ func InsertRecruitment(user *User, channel *Channel, title string, capacity uint
 		return nil, i18n.T(channel.Language, "capacity_over"), nil
 	}
 
-	if reserveAt != nil && reserveAt.Before(time.Now()) {
-		reserveAt = nil
+	if reserveAt != nil {
+		if reserveAt.Before(time.Now()) {
+			reserveAt = nil
+		}
+		reserveAtDiff := uint32(reserveAt.Sub(time.Now()).Seconds())
+		if channel.ReserveLimitTime != 0 && channel.ReserveLimitTime < reserveAtDiff {
+			return nil, i18n.T(channel.Language, "reserve_limit_over"), nil
+		}
 	}
 	var expireAt time.Time
 	if reserveAt != nil {
