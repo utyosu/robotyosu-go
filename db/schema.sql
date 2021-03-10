@@ -20,6 +20,8 @@ CREATE TABLE `channels` (
   `timezone` varchar(30) NOT NULL,
   `language` varchar(10) NOT NULL DEFAULT '',
   `reserve_limit_time` int(10) unsigned DEFAULT '0',
+  `expire_duration` int(10) unsigned DEFAULT '3600',
+  `expire_duration_for_reserve` int(10) unsigned DEFAULT '1800',
   `twitter_config_id` int(10) unsigned NOT NULL DEFAULT '0',
   `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `updated_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
