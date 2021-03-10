@@ -100,9 +100,9 @@ func InsertRecruitment(user *User, channel *Channel, title string, capacity uint
 	}
 	var expireAt time.Time
 	if reserveAt != nil {
-		expireAt = reserveAt.Add(time.Minute * 30)
+		expireAt = reserveAt.Add(time.Second * time.Duration(channel.ExpireDurationForReserve))
 	} else {
-		expireAt = time.Now().Add(time.Minute * 60)
+		expireAt = time.Now().Add(time.Second * time.Duration(channel.ExpireDuration))
 	}
 
 	label, err := fetchEmptyLabel(channel)

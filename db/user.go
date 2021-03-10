@@ -13,13 +13,20 @@ type User struct {
 	Nickname      Nickname `gorm:"foreignkey:DiscordUserId;references:discord_user_id"`
 }
 
-func FindOrCreateUser(discordUserId int64, name string) (*User, error) {
+func FindUser(discordUserId int64) (*User, error) {
 	user := User{}
 	if err := dbs.Take(&user, "discord_user_id=?", discordUserId).Error; err != nil {
-		// レコードが見つからない以外のエラーならエラーを返す
 		if !basic_errors.Is(err, gorm.ErrRecordNotFound) {
-			return nil, err
+			return nil, errors.WithStack(err)
 		}
+	}
+	return &user, nil
+}
+
+func FindOrCreateUser(discordUserId int64, name string) (*User, error) {
+	user, err := FindUser(discordUserId)
+	if err != nil {
+		return nil, err
 	}
 	if user.ID == 0 {
 		user.DiscordUserId = discordUserId
@@ -33,7 +40,7 @@ func FindOrCreateUser(discordUserId int64, name string) (*User, error) {
 			return nil, errors.WithStack(err)
 		}
 	}
-	return &user, nil
+	return user, nil
 }
 
 func (u *User) DisplayName() string {

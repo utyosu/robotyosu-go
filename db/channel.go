@@ -15,22 +15,23 @@ const (
 
 type Channel struct {
 	gorm.Model
-	DiscordChannelId int64
-	DiscordGuildId   int64
-	Recruitment      bool
-	Timezone         string
-	Language         string
-	ReserveLimitTime uint32
-	TwitterConfigId  uint32
+	DiscordChannelId         int64
+	DiscordGuildId           int64
+	Recruitment              bool
+	Timezone                 string
+	Language                 string
+	ReserveLimitTime         uint32
+	ExpireDuration           uint32
+	ExpireDurationForReserve uint32
+	TwitterConfigId          uint32
 }
 
 func FindChannel(discordChannelId int64) (*Channel, error) {
 	channel := Channel{}
 	if err := dbs.Take(&channel, "discord_channel_id=?", discordChannelId).Error; err != nil {
-		if basic_errors.Is(err, gorm.ErrRecordNotFound) {
-			return &channel, nil
+		if !basic_errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, errors.WithStack(err)
 		}
-		return nil, errors.WithStack(err)
 	}
 	return &channel, nil
 }
@@ -38,7 +39,7 @@ func FindChannel(discordChannelId int64) (*Channel, error) {
 func FindOrCreateChannel(discordChannelId, discordGuildId int64) (*Channel, error) {
 	channel, err := FindChannel(discordChannelId)
 	if err != nil {
-		return nil, errors.WithStack(err)
+		return nil, err
 	}
 	if channel.ID == 0 {
 		channel.DiscordChannelId = discordChannelId
@@ -61,26 +62,38 @@ func (c *Channel) IsEnabledRecruitment() bool {
 	return c.ID != 0 && c.Recruitment
 }
 
-func (c *Channel) UpdateChannelRecruitment(isRecruitment bool) error {
+func (c *Channel) UpdateRecruitment(isRecruitment bool) error {
 	c.Recruitment = isRecruitment
 	err := dbs.Save(c).Error
 	return errors.WithStack(err)
 }
 
-func (c *Channel) UpdateChannelTimezone(timezone string) error {
+func (c *Channel) UpdateTimezone(timezone string) error {
 	c.Timezone = timezone
 	err := dbs.Save(c).Error
 	return errors.WithStack(err)
 }
 
-func (c *Channel) UpdateChannelLanguage(language string) error {
+func (c *Channel) UpdateLanguage(language string) error {
 	c.Language = language
 	err := dbs.Save(c).Error
 	return errors.WithStack(err)
 }
 
-func (c *Channel) UpdateChannelReserveLimitTime(reserveLimitTime uint32) error {
+func (c *Channel) UpdateReserveLimitTime(reserveLimitTime uint32) error {
 	c.ReserveLimitTime = reserveLimitTime
+	err := dbs.Save(c).Error
+	return errors.WithStack(err)
+}
+
+func (c *Channel) UpdateExpireDuration(expireDuration uint32) error {
+	c.ExpireDuration = expireDuration
+	err := dbs.Save(c).Error
+	return errors.WithStack(err)
+}
+
+func (c *Channel) UpdateExpireDurationForReserve(expireDurationForReserve uint32) error {
+	c.ExpireDurationForReserve = expireDurationForReserve
 	err := dbs.Save(c).Error
 	return errors.WithStack(err)
 }
