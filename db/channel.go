@@ -15,13 +15,15 @@ const (
 
 type Channel struct {
 	gorm.Model
-	DiscordChannelId int64
-	DiscordGuildId   int64
-	Recruitment      bool
-	Timezone         string
-	Language         string
-	ReserveLimitTime uint32
-	TwitterConfigId  uint32
+	DiscordChannelId         int64
+	DiscordGuildId           int64
+	Recruitment              bool
+	Timezone                 string
+	Language                 string
+	ReserveLimitTime         uint32
+	ExpireDuration           uint32
+	ExpireDurationForReserve uint32
+	TwitterConfigId          uint32
 }
 
 func FindChannel(discordChannelId int64) (*Channel, error) {
@@ -81,6 +83,18 @@ func (c *Channel) UpdateChannelLanguage(language string) error {
 
 func (c *Channel) UpdateChannelReserveLimitTime(reserveLimitTime uint32) error {
 	c.ReserveLimitTime = reserveLimitTime
+	err := dbs.Save(c).Error
+	return errors.WithStack(err)
+}
+
+func (c *Channel) UpdateExpireDuration(expireDuration uint32) error {
+	c.ExpireDuration = expireDuration
+	err := dbs.Save(c).Error
+	return errors.WithStack(err)
+}
+
+func (c *Channel) UpdateExpireDurationForReserve(expireDurationForReserve uint32) error {
+	c.ExpireDurationForReserve = expireDurationForReserve
 	err := dbs.Save(c).Error
 	return errors.WithStack(err)
 }
