@@ -29,10 +29,9 @@ type Channel struct {
 func FindChannel(discordChannelId int64) (*Channel, error) {
 	channel := Channel{}
 	if err := dbs.Take(&channel, "discord_channel_id=?", discordChannelId).Error; err != nil {
-		if basic_errors.Is(err, gorm.ErrRecordNotFound) {
-			return &channel, nil
+		if !basic_errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, errors.WithStack(err)
 		}
-		return nil, errors.WithStack(err)
 	}
 	return &channel, nil
 }
@@ -40,7 +39,7 @@ func FindChannel(discordChannelId int64) (*Channel, error) {
 func FindOrCreateChannel(discordChannelId, discordGuildId int64) (*Channel, error) {
 	channel, err := FindChannel(discordChannelId)
 	if err != nil {
-		return nil, errors.WithStack(err)
+		return nil, err
 	}
 	if channel.ID == 0 {
 		channel.DiscordChannelId = discordChannelId
