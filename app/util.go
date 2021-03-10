@@ -1,7 +1,9 @@
 package app
 
 import (
+	"fmt"
 	"regexp"
+	"runtime"
 	"strconv"
 	"strings"
 	"time"
@@ -45,6 +47,17 @@ func doFuncSchedule(f func(), interval time.Duration) *time.Ticker {
 
 func NotifySlackWhenPanic(p ...interface{}) {
 	if err := recover(); err != nil {
+		stackTrace := []string{}
+		for depth := 0; ; depth++ {
+			_, file, line, ok := runtime.Caller(depth)
+			if !ok {
+				break
+			}
+			stackTrace = append(stackTrace, fmt.Sprintf("%v: %v:%v", depth, file, line))
+		}
+		p = append(p[:2], p[0:]...)
+		p[0] = err
+		p[1] = stackTrace
 		slackAlert.Post(p...)
 	}
 }
