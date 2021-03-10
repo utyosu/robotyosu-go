@@ -63,25 +63,25 @@ func (c *Channel) IsEnabledRecruitment() bool {
 	return c.ID != 0 && c.Recruitment
 }
 
-func (c *Channel) UpdateChannelRecruitment(isRecruitment bool) error {
+func (c *Channel) UpdateRecruitment(isRecruitment bool) error {
 	c.Recruitment = isRecruitment
 	err := dbs.Save(c).Error
 	return errors.WithStack(err)
 }
 
-func (c *Channel) UpdateChannelTimezone(timezone string) error {
+func (c *Channel) UpdateTimezone(timezone string) error {
 	c.Timezone = timezone
 	err := dbs.Save(c).Error
 	return errors.WithStack(err)
 }
 
-func (c *Channel) UpdateChannelLanguage(language string) error {
+func (c *Channel) UpdateLanguage(language string) error {
 	c.Language = language
 	err := dbs.Save(c).Error
 	return errors.WithStack(err)
 }
 
-func (c *Channel) UpdateChannelReserveLimitTime(reserveLimitTime uint32) error {
+func (c *Channel) UpdateReserveLimitTime(reserveLimitTime uint32) error {
 	c.ReserveLimitTime = reserveLimitTime
 	err := dbs.Save(c).Error
 	return errors.WithStack(err)

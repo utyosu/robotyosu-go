@@ -23,7 +23,7 @@ func actionAllChannel(s *discordgo.Session, m *discordgo.MessageCreate) (bool, e
 		if err != nil {
 			return true, err
 		}
-		if err := channel.UpdateChannelRecruitment(true); err != nil {
+		if err := channel.UpdateRecruitment(true); err != nil {
 			return true, err
 		}
 		sendMessage(m.ChannelID, i18n.CommonMessage("enable"))
@@ -37,7 +37,7 @@ func actionAllChannel(s *discordgo.Session, m *discordgo.MessageCreate) (bool, e
 		if err != nil {
 			return true, err
 		}
-		if err := channel.UpdateChannelRecruitment(false); err != nil {
+		if err := channel.UpdateRecruitment(false); err != nil {
 			return true, err
 		}
 		sendMessage(m.ChannelID, i18n.CommonMessage("disable"))

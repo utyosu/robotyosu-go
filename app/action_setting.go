@@ -36,7 +36,7 @@ func actionSetting(s *discordgo.Session, m *discordgo.MessageCreate, channel *db
 			sendMessage(m.ChannelID, fmt.Sprintf("No such timezone: %v", timezoneString))
 			return true, nil
 		}
-		if err = channel.UpdateChannelTimezone(timezoneString); err != nil {
+		if err = channel.UpdateTimezone(timezoneString); err != nil {
 			return true, err
 		}
 		sendMessage(m.ChannelID, fmt.Sprintf("Timezone changed to %v", timezoneString))
@@ -60,7 +60,7 @@ func actionSetting(s *discordgo.Session, m *discordgo.MessageCreate, channel *db
 			sendMessage(m.ChannelID, fmt.Sprintf("No such language: %v", languageString))
 			return true, nil
 		}
-		if err := channel.UpdateChannelLanguage(languageString); err != nil {
+		if err := channel.UpdateLanguage(languageString); err != nil {
 			return true, err
 		}
 		sendMessage(m.ChannelID, fmt.Sprintf("Language changed to %v", languageString))
@@ -84,7 +84,7 @@ func actionSetting(s *discordgo.Session, m *discordgo.MessageCreate, channel *db
 			sendMessage(m.ChannelID, fmt.Sprintf("Invalid time: %v", reserveLimitTimeString))
 			return true, nil
 		}
-		if err := channel.UpdateChannelReserveLimitTime(uint32(reserveLimitTime)); err != nil {
+		if err := channel.UpdateReserveLimitTime(uint32(reserveLimitTime)); err != nil {
 			return true, err
 		}
 		sendMessage(
