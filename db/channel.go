@@ -2,6 +2,8 @@ package db
 
 import (
 	basic_errors "errors"
+	"fmt"
+	"github.com/patrickmn/go-cache"
 	"github.com/pkg/errors"
 	"gorm.io/gorm"
 	"log"
@@ -27,12 +29,22 @@ type Channel struct {
 }
 
 func FindChannel(discordChannelId int64) (*Channel, error) {
+	if r, found := mc.Get(getChannelCacheKey(discordChannelId)); found {
+		return r.(*Channel), nil
+	}
+
 	channel := Channel{}
 	if err := dbs.Take(&channel, "discord_channel_id=?", discordChannelId).Error; err != nil {
 		if !basic_errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, errors.WithStack(err)
 		}
 	}
+
+	mc.Set(
+		getChannelCacheKey(channel.DiscordChannelId),
+		&channel,
+		cache.DefaultExpiration,
+	)
 	return &channel, nil
 }
 
@@ -109,4 +121,8 @@ func (c *Channel) LoadLocation() *time.Location {
 		timezone, _ = time.LoadLocation(defaultTimezone)
 	}
 	return timezone
+}
+
+func getChannelCacheKey(discordChannelId int64) string {
+	return fmt.Sprintf("channel/discord_channel_id=%v", discordChannelId)
 }

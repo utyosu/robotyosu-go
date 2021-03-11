@@ -10,20 +10,26 @@
 
 package env
 
+import (
+	"time"
+)
+
 const (
-	DiscordBotToken     = "Discord Bot Token"
-	DiscordBotClientId  = "Client ID"
-	DbDriver            = "mysql"
-	DbUser              = "user"
-	DbPassword          = "password"
-	DbHost              = "127.0.0.1"
-	DbPort              = "3306"
-	DbName              = "database_name"
-	DbLogLevel          = "info" // silent, error, warn, info
-	SlackToken          = "TOKEN"
-	SlackChannelWarning = "#channel-name-warning"
-	SlackChannelAlert   = "#channel-name-alert"
-	SlackTitleWarning   = "robotyosu-go warning notification"
-	SlackTitleAlert     = "robotyosu-go alert notification"
-	ScheduledDuration   = 60
+	DiscordBotToken      = "Discord Bot Token"
+	DiscordBotClientId   = "Client ID"
+	DbDriver             = "mysql"
+	DbUser               = "user"
+	DbPassword           = "password"
+	DbHost               = "127.0.0.1"
+	DbPort               = "3306"
+	DbName               = "database_name"
+	DbLogLevel           = "info" // silent, error, warn, info
+	SlackToken           = "TOKEN"
+	SlackChannelWarning  = "#channel-name-warning"
+	SlackChannelAlert    = "#channel-name-alert"
+	SlackTitleWarning    = "robotyosu-go warning notification"
+	SlackTitleAlert      = "robotyosu-go alert notification"
+	ScheduledDuration    = time.Second * 60
+	CacheExpiration      = time.Hour * 24
+	CacheCleanupInterval = time.Hour * 1
 )

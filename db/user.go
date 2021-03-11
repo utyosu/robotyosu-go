@@ -2,6 +2,8 @@ package db
 
 import (
 	basic_errors "errors"
+	"fmt"
+	"github.com/patrickmn/go-cache"
 	"github.com/pkg/errors"
 	"gorm.io/gorm"
 )
@@ -14,12 +16,22 @@ type User struct {
 }
 
 func FindUser(discordUserId int64) (*User, error) {
+	if r, found := mc.Get(getUserCacheKey(discordUserId)); found {
+		return r.(*User), nil
+	}
+
 	user := User{}
 	if err := dbs.Take(&user, "discord_user_id=?", discordUserId).Error; err != nil {
 		if !basic_errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, errors.WithStack(err)
 		}
 	}
+
+	mc.Set(
+		getUserCacheKey(user.DiscordUserId),
+		&user,
+		cache.DefaultExpiration,
+	)
 	return &user, nil
 }
 
@@ -48,4 +60,8 @@ func (u *User) DisplayName() string {
 		return u.Nickname.Name
 	}
 	return u.Name
+}
+
+func getUserCacheKey(discordUserId int64) string {
+	return fmt.Sprintf("user/discord_user_id=%v", discordUserId)
 }
