@@ -2,6 +2,7 @@ package db
 
 import (
 	"fmt"
+	"github.com/patrickmn/go-cache"
 	"github.com/utyosu/robotyosu-go/env"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
@@ -10,6 +11,7 @@ import (
 
 var (
 	dbs *gorm.DB
+	mc  *cache.Cache
 )
 
 func init() {
@@ -43,4 +45,6 @@ func init() {
 	if err != nil {
 		panic(err)
 	}
+
+	mc = cache.New(env.CacheExpiration, env.CacheCleanupInterval)
 }

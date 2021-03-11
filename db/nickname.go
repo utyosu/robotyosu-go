@@ -2,6 +2,8 @@ package db
 
 import (
 	basic_errors "errors"
+	"fmt"
+	"github.com/patrickmn/go-cache"
 	"github.com/pkg/errors"
 	"gorm.io/gorm"
 )
@@ -14,6 +16,10 @@ type Nickname struct {
 }
 
 func FindNickname(discordUserId, discordGuildId int64) (*Nickname, error) {
+	if r, found := mc.Get(getNicknameCacheKey(discordUserId, discordGuildId)); found {
+		return r.(*Nickname), nil
+	}
+
 	nickname := Nickname{}
 	if err := dbs.Take(&nickname, "discord_user_id=? AND discord_guild_id=?", discordUserId, discordGuildId).Error; err != nil {
 		if basic_errors.Is(err, gorm.ErrRecordNotFound) {
@@ -21,6 +27,12 @@ func FindNickname(discordUserId, discordGuildId int64) (*Nickname, error) {
 		}
 		return nil, errors.WithStack(err)
 	}
+
+	mc.Set(
+		getNicknameCacheKey(nickname.DiscordUserId, nickname.DiscordGuildId),
+		&nickname,
+		cache.DefaultExpiration,
+	)
 	return &nickname, nil
 }
 
@@ -38,4 +50,8 @@ func UpdateNickname(discordUserId, discordGuildId int64, name string) (*Nickname
 		}
 	}
 	return nickname, nil
+}
+
+func getNicknameCacheKey(discordUserId, discordGuildId int64) string {
+	return fmt.Sprintf("nickname/discord_user_id=%v&discord_guild_id=%v", discordUserId, discordGuildId)
 }
