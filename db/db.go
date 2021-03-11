@@ -12,7 +12,7 @@ var (
 	dbs *gorm.DB
 )
 
-func ConnectDb() *gorm.DB {
+func init() {
 	var err error
 	dsn := fmt.Sprintf(
 		"%s:%s@tcp(%s:%s)/%s?parseTime=true",
@@ -43,6 +43,4 @@ func ConnectDb() *gorm.DB {
 	if err != nil {
 		panic(err)
 	}
-
-	return dbs
 }
