@@ -10,7 +10,6 @@ import (
 	"github.com/utyosu/robotyosu-go/slack"
 	"log"
 	"strconv"
-	"time"
 )
 
 var (
@@ -50,8 +49,8 @@ func Start() {
 	defer discordSession.Close()
 	log.Println("Listening...")
 
-	doFuncSchedule(closeExpiredRecruitment, time.Second*env.ScheduledDuration)
-	doFuncSchedule(notifyReservedRecruitmentOnTime, time.Second*env.ScheduledDuration)
+	doFuncSchedule(closeExpiredRecruitment, env.ScheduledDuration)
+	doFuncSchedule(notifyReservedRecruitmentOnTime, env.ScheduledDuration)
 	<-stopBot
 }
 

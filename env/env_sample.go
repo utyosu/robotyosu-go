@@ -10,6 +10,10 @@
 
 package env
 
+import (
+	"time"
+)
+
 const (
 	DiscordBotToken     = "Discord Bot Token"
 	DiscordBotClientId  = "Client ID"
@@ -25,5 +29,5 @@ const (
 	SlackChannelAlert   = "#channel-name-alert"
 	SlackTitleWarning   = "robotyosu-go warning notification"
 	SlackTitleAlert     = "robotyosu-go alert notification"
-	ScheduledDuration   = 60
+	ScheduledDuration   = time.Second * 60
 )
