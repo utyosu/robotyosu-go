@@ -96,6 +96,10 @@ func (t *timeInt) toTime(now time.Time) *time.Time {
 	// 12時間表記で12時以降だと思われるものを24時間表記に変換する
 	if t.hour <= 12 && t.hour < now.Hour() {
 		t.hour += 12
+		// それでも現在時刻より前なら翌日にする
+		if t.hour < now.Hour() {
+			t.hour += 12
+		}
 	}
 
 	// 24時を超えていた場合は翌日扱いにする
