@@ -12,7 +12,9 @@ import (
 )
 
 const (
-	defaultTimezone = "Asia/Tokyo"
+	defaultTimezone                 = "Asia/Tokyo"
+	defaultExpireDuration           = 3600
+	defaultExpireDurationForReserve = 1800
 )
 
 type Channel struct {
@@ -57,6 +59,8 @@ func FindOrCreateChannel(discordChannelId, discordGuildId int64) (*Channel, erro
 		channel.DiscordChannelId = discordChannelId
 		channel.DiscordGuildId = discordGuildId
 		channel.Timezone = defaultTimezone
+		channel.ExpireDuration = defaultExpireDuration
+		channel.ExpireDurationForReserve = defaultExpireDurationForReserve
 		if err := dbs.Create(&channel).Error; err != nil {
 			return nil, errors.WithStack(err)
 		}
