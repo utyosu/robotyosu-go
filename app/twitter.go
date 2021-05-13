@@ -79,7 +79,9 @@ func buildTwitterMessage(twitterConfig *db.TwitterConfig, c *db.Channel, r *db.R
 	switch t {
 	case TwitterTypeOpen, TwitterTypeUpdate:
 		memberNames := r.MemberNames()
-		if len(memberNames) > 0 {
+		if len(r.Participants) <= 0 {
+			return i18n.T(c.Language, "twitter_close", twitterConfig.Title)
+		} else if len(memberNames) > 0 {
 			return i18n.T(c.Language, "twitter_recruit", twitterConfig.Title, r.Title, r.AuthorName(), len(r.Participants)-1, r.Capacity-1) +
 				"\n" +
 				i18n.T(c.Language, "twitter_members", strings.Join(memberNames, ", "))
