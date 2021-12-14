@@ -2,10 +2,11 @@ package db
 
 import (
 	basic_errors "errors"
+	"time"
+
 	"github.com/pkg/errors"
 	"github.com/utyosu/robotyosu-go/i18n"
 	"gorm.io/gorm"
-	"time"
 )
 
 const (

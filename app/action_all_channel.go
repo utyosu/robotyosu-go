@@ -2,10 +2,11 @@ package app
 
 import (
 	"fmt"
+	"strconv"
+
 	"github.com/bwmarrin/discordgo"
 	"github.com/utyosu/robotyosu-go/db"
 	"github.com/utyosu/robotyosu-go/i18n"
-	"strconv"
 )
 
 func actionAllChannel(s *discordgo.Session, m *discordgo.MessageCreate) (bool, error) {

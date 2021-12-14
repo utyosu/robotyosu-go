@@ -2,9 +2,10 @@ package slack
 
 import (
 	"fmt"
+	"log"
+
 	"github.com/k0kubun/pp/v3"
 	"github.com/slack-go/slack"
-	"log"
 )
 
 type Config struct {

@@ -1,13 +1,14 @@
 package app
 
 import (
+	"regexp"
+	"strings"
+
 	"github.com/dghubble/go-twitter/twitter"
 	"github.com/dghubble/oauth1"
 	"github.com/pkg/errors"
 	"github.com/utyosu/robotyosu-go/db"
 	"github.com/utyosu/robotyosu-go/i18n"
-	"regexp"
-	"strings"
 )
 
 type TwitterType int
