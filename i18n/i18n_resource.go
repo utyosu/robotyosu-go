@@ -18,7 +18,7 @@ var (
 	}
 
 	languageDictionary = map[string]map[string]string{
-		"ja": map[string]string{
+		"ja": {
 			"recruit":               "[%v] %v by %v (%v/%v)",
 			"participants":          "    参加者: %s",
 			"no_recruitment":        "募集はありません",
@@ -45,7 +45,7 @@ var (
 			"error":                 "エラーが発生しました。何度も発生する場合は開発者にお問い合わせ下さい。",
 			"twitter_error":         "ツイートの投稿に失敗しました。何度も発生する場合は開発者にお問い合わせ下さい。",
 		},
-		"en": map[string]string{
+		"en": {
 			"recruit":               "[%v] %v by %v (%v/%v)",
 			"participants":          "    Members: %s",
 			"no_recruitment":        "No recruitments.",
@@ -75,7 +75,7 @@ var (
 	}
 
 	helpBasicCommands = map[string][]commandSet{
-		"ja": []commandSet{
+		"ja": {
 			{".rt enable", "ロボちょすBOTの有効化"},
 			{".rt disable", "ロボちょすBOTの無効化"},
 			{".rt help", "設定変更コマンドの参照"},
@@ -92,7 +92,7 @@ var (
 			{".rt expire_duration_for_reserve ${TIME}", "expire_duration_for_reserveの変更"},
 			{"使い方", "募集機能の使い方"},
 		},
-		"en": []commandSet{
+		"en": {
 			{".rt enable", "Enable robotyosu bot."},
 			{".rt disable", "Disable robotyosu bot."},
 			{".rt help", "Show setting commands."},
@@ -112,7 +112,7 @@ var (
 	}
 
 	helpRecruitmentCommands = map[string][]commandSet{
-		"ja": []commandSet{
+		"ja": {
 			{"募集内容@<数字>", "募集の開始 (例「ゲームしましょう@3」)"},
 			{"<数字>参加", "募集に参加 (例「1参加」)"},
 			{"<数字>キャンセル", "参加キャンセル (例「1キャンセル」)"},
@@ -120,7 +120,7 @@ var (
 			{"復活", "最後に終了した募集を再開"},
 			{"案件", "最新の募集状態を表示"},
 		},
-		"en": []commandSet{
+		"en": {
 			{"Recruitment contents@<number>", "Start recruitment (ex. Play games@3)"},
 			{"<number>join", "Join recruitment (ex. 1 join)"},
 			{"<number>cancel", "Cancel participation (ex. 1 cancel)"},
