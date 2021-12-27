@@ -2,6 +2,7 @@ package db
 
 import (
 	"fmt"
+
 	"github.com/patrickmn/go-cache"
 	"github.com/utyosu/robotyosu-go/env"
 	"gorm.io/driver/mysql"

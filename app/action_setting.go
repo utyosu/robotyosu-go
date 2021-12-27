@@ -2,12 +2,13 @@ package app
 
 import (
 	"fmt"
-	"github.com/bwmarrin/discordgo"
-	"github.com/utyosu/robotyosu-go/db"
-	"github.com/utyosu/robotyosu-go/i18n"
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/bwmarrin/discordgo"
+	"github.com/utyosu/robotyosu-go/db"
+	"github.com/utyosu/robotyosu-go/i18n"
 )
 
 func actionSetting(s *discordgo.Session, m *discordgo.MessageCreate, channel *db.Channel) (bool, error) {

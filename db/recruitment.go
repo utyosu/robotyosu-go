@@ -2,10 +2,11 @@ package db
 
 import (
 	basic_errors "errors"
+	"time"
+
 	"github.com/pkg/errors"
 	"github.com/utyosu/robotyosu-go/i18n"
 	"gorm.io/gorm"
-	"time"
 )
 
 const (
@@ -258,7 +259,15 @@ func (r *Recruitment) ReserveAtTime(timezone *time.Location) string {
 	if r.ReserveAt == nil {
 		return ""
 	}
-	return r.ReserveAt.In(timezone).Format("15:04")
+
+	reserveAt := r.ReserveAt.In(timezone)
+	now := time.Now().In(timezone)
+	if reserveAt.Year() == now.Year() &&
+		reserveAt.Month() == now.Month() &&
+		reserveAt.Day() == now.Day() {
+		return reserveAt.Format("15:04")
+	}
+	return reserveAt.Format("2006-01-02 15:04")
 }
 
 func (r *Recruitment) ExpireAtTime(timezone *time.Location) string {

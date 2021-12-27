@@ -2,14 +2,15 @@ package app
 
 import (
 	"fmt"
+	"regexp"
+	"strings"
+	"time"
+
 	"github.com/bwmarrin/discordgo"
 	"github.com/utyosu/robotyosu-go/db"
 	"github.com/utyosu/robotyosu-go/i18n"
 	"github.com/utyosu/robotyosu-go/msg"
 	"golang.org/x/text/width"
-	"regexp"
-	"strings"
-	"time"
 )
 
 var (

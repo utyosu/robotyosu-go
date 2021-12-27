@@ -1,8 +1,9 @@
 package main
 
 import (
-	"github.com/utyosu/robotyosu-go/app"
 	"time"
+
+	"github.com/utyosu/robotyosu-go/app"
 )
 
 func init() {

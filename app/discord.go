@@ -2,14 +2,15 @@ package app
 
 import (
 	"fmt"
+	"log"
+	"strconv"
+
 	"github.com/bwmarrin/discordgo"
 	"github.com/pkg/errors"
 	"github.com/utyosu/robotyosu-go/db"
 	"github.com/utyosu/robotyosu-go/env"
 	"github.com/utyosu/robotyosu-go/i18n"
 	"github.com/utyosu/robotyosu-go/slack"
-	"log"
-	"strconv"
 )
 
 var (
