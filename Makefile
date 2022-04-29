@@ -25,7 +25,7 @@ deploy-production: build-production
 	scp bin/robotyosu-production production:/tmp
 	ssh production " \
 		mv /tmp/robotyosu-production /home/ec2-user && \
-		supervisorctl restart robotyosu \
+		sudo /usr/local/bin/supervisorctl restart robotyosu \
 	"
 
 start-production:
