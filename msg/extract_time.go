@@ -204,7 +204,7 @@ func (t *timeInt) toTime(now time.Time) *time.Time {
 
 func (d *dateInt) toTimeWithTimeInt(t *timeInt, now time.Time) *time.Time {
 	// 変な時間は変換しない
-	if t.min < 0 || 60 <= t.min || t.hour < 0 || 23 <= t.hour {
+	if t.min < 0 || 60 <= t.min || t.hour < 0 || 24 <= t.hour {
 		return nil
 	}
 
