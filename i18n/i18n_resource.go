@@ -90,7 +90,6 @@ var (
 			{".rt expire_duration ${TIME}", "expire_durationの変更"},
 			{".rt expire_duration_for_reserve", "日時指定をして募集したときの締め切りまでの時間（秒数）"},
 			{".rt expire_duration_for_reserve ${TIME}", "expire_duration_for_reserveの変更"},
-			{"使い方", "募集機能の使い方"},
 		},
 		"en": {
 			{".rt enable", "Enable robotyosu bot."},
@@ -107,7 +106,6 @@ var (
 			{".rt expire_duration ${TIME}", "Change expire duration."},
 			{".rt expire_duration_for_reserve", "Expire duration for reserved recruitment. (sec)"},
 			{".rt expire_duration_for_reserve ${TIME}", "Change expire duration for reserve."},
-			{"help", "How to use recruitment."},
 		},
 	}
 
