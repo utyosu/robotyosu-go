@@ -1,6 +1,6 @@
 module github.com/utyosu/robotyosu-go
 
-go 1.15
+go 1.19
 
 require (
 	github.com/bwmarrin/discordgo v0.26.1
@@ -13,4 +13,18 @@ require (
 	golang.org/x/text v0.3.7
 	gorm.io/driver/mysql v1.3.6
 	gorm.io/gorm v1.23.8
+)
+
+require (
+	github.com/cenkalti/backoff/v4 v4.1.3 // indirect
+	github.com/dghubble/sling v1.4.0 // indirect
+	github.com/go-sql-driver/mysql v1.6.0 // indirect
+	github.com/google/go-querystring v1.1.0 // indirect
+	github.com/gorilla/websocket v1.4.2 // indirect
+	github.com/jinzhu/inflection v1.0.0 // indirect
+	github.com/jinzhu/now v1.1.5 // indirect
+	github.com/mattn/go-colorable v0.1.12 // indirect
+	github.com/mattn/go-isatty v0.0.14 // indirect
+	golang.org/x/crypto v0.0.0-20210421170649-83a5a9bb288b // indirect
+	golang.org/x/sys v0.0.0-20210927094055-39ccf1dd6fa6 // indirect
 )
