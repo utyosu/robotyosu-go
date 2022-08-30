@@ -37,11 +37,10 @@ func init() {
 
 func Start() {
 	var err error
-	discordSession, err = discordgo.New()
+	discordSession, err = discordgo.New(fmt.Sprintf("Bot %s", env.DiscordBotToken))
 	if err != nil {
 		panic(err)
 	}
-	discordSession.Token = fmt.Sprintf("Bot %s", env.DiscordBotToken)
 
 	discordSession.AddHandler(onMessageCreate)
 	if err = discordSession.Open(); err != nil {
