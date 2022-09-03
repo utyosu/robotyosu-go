@@ -51,6 +51,7 @@ CREATE TABLE `participants` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `discord_user_id` bigint(20) NOT NULL DEFAULT '0',
   `recruitment_id` int(10) unsigned NOT NULL,
+  `alternate` tinyint(1) NOT NULL DEFAULT '0',
   `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `updated_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `deleted_at` timestamp NULL DEFAULT NULL,
@@ -126,3 +127,4 @@ CREATE TABLE `users` (
 /*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
+

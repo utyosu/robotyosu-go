@@ -83,6 +83,21 @@ func actionRecruitment(s *discordgo.Session, m *discordgo.MessageCreate, channel
 			viewActiveRecruitments(channel)
 		}
 
+	// 補欠参加
+	case isContainKeywords(formattedContent, keywordsJoinRecruitmentAlternate):
+		recruitment, err := fetchRecruitmentWithMessage(formattedContent, channel)
+		if err != nil {
+			return err
+		} else if recruitment == nil {
+			return nil
+		}
+		if ok, err := recruitment.JoinParticipantAlternate(user, channel); err != nil {
+			return err
+		} else if ok {
+			sendMessageT(channel, "join_alternate", user.DisplayName(), recruitment.Label)
+			viewActiveRecruitments(channel)
+		}
+
 	// キャンセル
 	case isContainKeywords(formattedContent, keywordsCancelRecruitment):
 		recruitment, err := fetchRecruitmentWithMessage(formattedContent, channel)
@@ -235,12 +250,17 @@ func viewActiveRecruitments(c *db.Channel) {
 				continue
 			}
 
-			m += i18n.T(c.Language, "recruit", r.Label, r.Title, r.AuthorName(), len(r.Participants)-1, r.Capacity-1) + "\n"
+			// 参加メンバー表示
+			memberNames := r.MemberNames(false)
+			alternateMemberNames := r.MemberNames(true)
 
-			// 参加者が2名以上ならメンバーを表示する
-			memberNames := r.MemberNames()
+			m += i18n.T(c.Language, "recruit", r.Label, r.Title, r.AuthorName(), len(memberNames), r.Capacity-1) + "\n"
+
 			if len(memberNames) > 0 {
 				m += i18n.T(c.Language, "participants", strings.Join(memberNames, ", ")) + "\n"
+			}
+			if len(alternateMemberNames) > 0 {
+				m += i18n.T(c.Language, "alternate_participants", strings.Join(alternateMemberNames, ", ")) + "\n"
 			}
 		}
 	}

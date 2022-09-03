@@ -25,6 +25,15 @@ var (
 		"join",
 		"take",
 	}
+	keywordsJoinRecruitmentAlternate = []string{
+		// for jp
+		"補欠",
+		"hoketu",
+		"hoketsu",
+
+		// for en
+		"alternate",
+	}
 	keywordsCancelRecruitment = []string{
 		// for jp
 		"キャンセル",
