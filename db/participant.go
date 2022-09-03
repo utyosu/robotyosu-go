@@ -9,13 +9,15 @@ type Participant struct {
 	gorm.Model
 	DiscordUserId int64
 	RecruitmentId uint32
+	Alternate     bool
 	User          User `gorm:"foreignkey:DiscordUserId;references:discord_user_id"`
 }
 
-func InsertParticipant(user *User, recruitment *Recruitment) error {
+func InsertParticipant(user *User, recruitment *Recruitment, alternate bool) error {
 	err := dbs.Create(&Participant{
 		DiscordUserId: user.DiscordUserId,
 		RecruitmentId: uint32(recruitment.ID),
+		Alternate:     alternate,
 	}).Error
 	return errors.WithStack(err)
 }

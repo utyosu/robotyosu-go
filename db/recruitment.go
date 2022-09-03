@@ -126,7 +126,7 @@ func InsertRecruitment(user *User, channel *Channel, title string, capacity uint
 	if err != nil {
 		return nil, "", errors.WithStack(err)
 	}
-	if err := InsertParticipant(user, recruitment); err != nil {
+	if err := InsertParticipant(user, recruitment, false); err != nil {
 		return nil, "", err
 	}
 	recruitment.Reload(channel)
@@ -140,14 +140,58 @@ func (r *Recruitment) CloseRecruitment() error {
 }
 
 func (r *Recruitment) JoinParticipant(user *User, channel *Channel) (bool, error) {
-	// 既に参加していれば失敗にする
 	for _, participant := range r.Participants {
 		if participant.DiscordUserId == user.DiscordUserId {
-			return false, nil
+			// 既に参加していれば失敗にする
+			if !participant.Alternate {
+				return false, nil
+			}
+
+			// 既に補欠参加していれば参加に切り替える
+			if err := participant.Delete(); err != nil {
+				return false, err
+			}
+			if err := InsertParticipant(user, r, false); err != nil {
+				return false, err
+			}
+			return true, nil
 		}
 	}
 
-	if err := InsertParticipant(user, r); err != nil {
+	if err := InsertParticipant(user, r, false); err != nil {
+		return false, err
+	}
+	r.Reload(channel)
+	return true, nil
+}
+
+func (r *Recruitment) JoinParticipantAlternate(user *User, channel *Channel) (bool, error) {
+	for i, participant := range r.Participants {
+		if participant.DiscordUserId == user.DiscordUserId {
+
+			// 最初の参加者(=主催者)のときは補欠参加できない
+			if i == 0 {
+				return false, nil
+			}
+
+			// 既に補欠参加していれば何もしない
+			if participant.Alternate {
+				return false, nil
+			}
+
+			// 既に参加していれば補欠に切り替える
+			if err := participant.Delete(); err != nil {
+				return false, err
+			}
+			if err := InsertParticipant(user, r, true); err != nil {
+				return false, err
+			}
+			return true, nil
+		}
+	}
+
+	// 補欠参加する
+	if err := InsertParticipant(user, r, true); err != nil {
 		return false, err
 	}
 	r.Reload(channel)
@@ -161,7 +205,7 @@ func (r *Recruitment) LeaveParticipant(user *User, channel *Channel) (bool, erro
 				return false, err
 			}
 			r.Reload(channel)
-			if len(r.Participants) == 0 {
+			if r.ParticipantCount() == 0 {
 				if err := r.CloseRecruitment(); err != nil {
 					return false, err
 				}
@@ -207,12 +251,22 @@ func (r *Recruitment) IsPastExpireAt() bool {
 	return r.ExpireAt == nil || r.ExpireAt.Before(time.Now())
 }
 
+func (r *Recruitment) ParticipantCount() int {
+	var participantCount int
+	for _, p := range r.Participants {
+		if !p.Alternate {
+			participantCount += 1
+		}
+	}
+	return participantCount
+}
+
 func (r *Recruitment) IsParticipantsFull() bool {
-	return int(r.Capacity) <= len(r.Participants)
+	return int(r.Capacity) <= r.ParticipantCount()
 }
 
 func (r *Recruitment) VacantSize() int {
-	return int(r.Capacity) - len(r.Participants)
+	return int(r.Capacity) - r.ParticipantCount()
 }
 
 func (r *Recruitment) NotifyRecruitment() error {
@@ -243,14 +297,16 @@ func (r *Recruitment) AuthorName() string {
 	return r.Participants[0].User.DisplayName()
 }
 
-func (r *Recruitment) MemberNames() []string {
+func (r *Recruitment) MemberNames(alternate bool) []string {
 	if len(r.Participants) <= 1 {
 		return []string{}
 	}
 	memberSize := len(r.Participants) - 1
-	names := make([]string, memberSize, memberSize)
-	for i, p := range r.Participants[1:] {
-		names[i] = p.User.DisplayName()
+	names := make([]string, 0, memberSize)
+	for _, p := range r.Participants[1:] {
+		if p.Alternate == alternate {
+			names = append(names, p.User.DisplayName())
+		}
 	}
 	return names
 }
