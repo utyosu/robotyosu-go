@@ -5,16 +5,19 @@ LD_FLAGS := \
   -X 'github.com/utyosu/robotyosu-go/app.commitHash=$(shell git log --pretty=format:%H -n 1)' \
   -X 'github.com/utyosu/robotyosu-go/app.buildDatetime=$(shell TZ='Asia/Tokyo' date '+%Y-%m-%d %H:%M:%S JST')'
 
+check-go-version:
+	./check-go-version.sh
+
 fmt:
 	go fmt ./...
 
 tidy:
 	go mod tidy
 
-build-local: fmt tidy
+build-local: fmt tidy check-go-version
 	go build -ldflags="${LD_FLAGS}" -o bin/robotyosu-local -tags="local"
 
-build-production:
+build-production: fmt tidy check-go-version
 	GOOS=linux GOARCH=amd64 go build -ldflags="${LD_FLAGS}" -o bin/robotyosu-production -tags="production"
 
 run-local: build-local
