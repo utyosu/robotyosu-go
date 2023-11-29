@@ -254,7 +254,7 @@ func viewActiveRecruitments(c *db.Channel) {
 			memberNames := r.MemberNames(false)
 			alternateMemberNames := r.MemberNames(true)
 
-			m += i18n.T(c.Language, "recruit", r.Label, r.Title, r.AuthorName(), len(memberNames), r.Capacity-1) + "\n"
+			m += i18n.T(c.Language, "recruit", r.Label, r.GetTitle(), r.AuthorName(), len(memberNames), r.Capacity-1) + "\n"
 
 			if len(memberNames) > 0 {
 				m += i18n.T(c.Language, "participants", strings.Join(memberNames, ", ")) + "\n"
