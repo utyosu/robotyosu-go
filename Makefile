@@ -52,12 +52,3 @@ migrate-db-up-local:
 migrate-db-down-local:
 	migrate -path db/migrations -database "mysql://${RBC_DATABASE_USER_LOCAL}:@tcp(${RBC_DATABASE_HOST_LOCAL}:${RBC_DATABASE_PORT_LOCAL})/${RBC_DATABASE_NAME_LOCAL}" down 1
 	mysqldump -u ${RBC_DATABASE_USER_LOCAL} -h ${RBC_DATABASE_HOST_LOCAL} -P ${RBC_DATABASE_PORT_LOCAL} ${RBC_DATABASE_NAME_LOCAL} -d --skip-comments --no-tablespaces | sed 's/ AUTO_INCREMENT=[0-9]*//g' > db/schema.sql
-
-migrate-db-production:
-	@echo -n "Are you sure? [y/N] " && read ans && [ $${ans:-N} = y ]
-	migrate -path db/migrations -database "mysql://${RBC_DATABASE_USER_PRODUCTION}:${RBC_DATABASE_PASSWORD_PRODUCTION}@tcp(${RBC_DATABASE_HOST_PRODUCTION}:${RBC_DATABASE_PORT_PRODUCTION})/${RBC_DATABASE_NAME_PRODUCTION}" up
-
-backup-db-production:
-	mkdir -p db/backups
-	mysqldump -u ${RBC_DATABASE_USER_PRODUCTION} -h ${RBC_DATABASE_HOST_PRODUCTION} -P ${RBC_DATABASE_PORT_PRODUCTION} ${RBC_DATABASE_NAME_PRODUCTION} --skip-comments --no-tablespaces --set-gtid-purged=OFF --default-character-set=binary -p > ${BACKUP_DIR}/${BACKUP_FILE_PREFIX}$(TIMESTAMP).sql
-	@echo "Create dump to ${BACKUP_DIR}/${BACKUP_FILE_PREFIX}$(TIMESTAMP).sql"
