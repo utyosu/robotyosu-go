@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/pkg/errors"
+	"github.com/utyosu/robotyosu-go/db/encrypt"
 	"github.com/utyosu/robotyosu-go/i18n"
 	"gorm.io/gorm"
 )
@@ -21,6 +22,7 @@ type Recruitment struct {
 	DiscordChannelId int64
 	Label            uint32
 	Title            string
+	EncryptedTitle   []byte
 	Capacity         uint32
 	Active           bool
 	Notified         bool
@@ -28,6 +30,13 @@ type Recruitment struct {
 	ReserveAt        *time.Time
 	ExpireAt         *time.Time
 	Participants     []Participant `gorm:"foreignkey:RecruitmentId"`
+}
+
+func (r *Recruitment) GetTitle() string {
+	if len(r.EncryptedTitle) > 0 {
+		return encrypt.DecryptString(r.EncryptedTitle)
+	}
+	return r.Title
 }
 
 // 指定ラベルの募集を取得する
@@ -115,7 +124,7 @@ func InsertRecruitment(user *User, channel *Channel, title string, capacity uint
 	recruitment := &Recruitment{
 		DiscordChannelId: channel.DiscordChannelId,
 		Label:            label,
-		Title:            title,
+		EncryptedTitle:   encrypt.EncryptString(title),
 		Capacity:         capacity,
 		Active:           true,
 		Notified:         false,
