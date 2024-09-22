@@ -67,6 +67,7 @@ CREATE TABLE `recruitments` (
   `discord_channel_id` bigint NOT NULL DEFAULT '0',
   `label` int unsigned NOT NULL,
   `title` varchar(100) NOT NULL,
+  `encrypted_title` varbinary(256) NOT NULL DEFAULT '',
   `capacity` int unsigned NOT NULL,
   `active` tinyint(1) NOT NULL,
   `notified` tinyint(1) NOT NULL,
