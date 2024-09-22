@@ -9,7 +9,7 @@ import (
 	"github.com/utyosu/robotyosu-go/i18n"
 )
 
-func actionAllChannel(s *discordgo.Session, m *discordgo.MessageCreate) (bool, error) {
+func actionAllChannel(_ *discordgo.Session, m *discordgo.MessageCreate) (bool, error) {
 	command, ok := toCommand(m.Content)
 	if !ok {
 		return false, nil

@@ -11,7 +11,7 @@ import (
 	"github.com/utyosu/robotyosu-go/i18n"
 )
 
-func actionSetting(s *discordgo.Session, m *discordgo.MessageCreate, channel *db.Channel) (bool, error) {
+func actionSetting(_ *discordgo.Session, m *discordgo.MessageCreate, channel *db.Channel) (bool, error) {
 	command, ok := toCommand(m.Content)
 	if !ok {
 		return false, nil

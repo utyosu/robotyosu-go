@@ -105,16 +105,14 @@ func onMessageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 		slackWarning.Post(err)
 		return
 	}
-	if m.Member != nil {
-		discordGuildId, _ := strconv.ParseInt(m.GuildID, 10, 64)
-		nickname, err := db.UpdateNickname(user.DiscordUserId, discordGuildId, m.Member.Nick)
-		if err != nil {
-			sendMessageT(channel, "error")
-			slackWarning.Post(err)
-			return
-		}
-		user.Nickname = *nickname
+	discordGuildId, _ := strconv.ParseInt(m.GuildID, 10, 64)
+	nickname, err := db.UpdateNickname(user.DiscordUserId, discordGuildId, getNickname(m))
+	if err != nil {
+		sendMessageT(channel, "error")
+		slackWarning.Post(err)
+		return
 	}
+	user.Nickname = *nickname
 
 	// recruitmentが有効なチャンネルで使えるコマンド
 	if channel.Recruitment {
@@ -138,4 +136,14 @@ func sendMessage(channelID string, msg string) {
 			channelID,
 		)
 	}
+}
+
+func getNickname(m *discordgo.MessageCreate) string {
+	if m.Member != nil && m.Member.Nick != "" {
+		return m.Member.Nick
+	}
+	if m.Author.GlobalName != "" {
+		return m.Author.GlobalName
+	}
+	return m.Author.Username
 }

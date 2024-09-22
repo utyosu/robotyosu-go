@@ -5,3 +5,4 @@ env/env_production.go
 /test.sql
 db/migrations/tmp
 db/backups
+.envrc
