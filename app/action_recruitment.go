@@ -19,7 +19,7 @@ var (
 	regexpFormatContentDeleteWord = regexp.MustCompile(`\r\n|\r|\n`)
 )
 
-func actionRecruitment(s *discordgo.Session, m *discordgo.MessageCreate, channel *db.Channel, user *db.User) error {
+func actionRecruitment(_ *discordgo.Session, m *discordgo.MessageCreate, channel *db.Channel, user *db.User) error {
 	rawContent := regexpFormatContentDeleteWord.ReplaceAllString(m.Content, "")
 	formattedContent := width.Fold.String(rawContent)
 	switch {
